@@ -4,28 +4,12 @@ import process from 'node:process';
 import { Application, PackageJsonReader, ReflectionKind, TSConfigReader } from 'typedoc';
 
 const ENTRY_POINT = 'src/index.ts';
+const TARGET_KINDS = ReflectionKind.Function | ReflectionKind.Method | ReflectionKind.Accessor;
 
 const ISSUE_KIND = {
 	MISSING_DOCSTRING: 'missing-docstring',
 	MISSING_EXAMPLE: 'missing-example',
 };
-
-function parseOptions(argv) {
-	return {
-		help: argv.includes('--help') || argv.includes('-h'),
-		includeAccessors: argv.includes('--include-accessors'),
-	};
-}
-
-function getTargetKinds(options) {
-	let kinds = ReflectionKind.Function | ReflectionKind.Method;
-
-	if (options.includeAccessors) {
-		kinds |= ReflectionKind.Accessor;
-	}
-
-	return kinds;
-}
 
 async function loadProject() {
 	const app = await Application.bootstrap(
@@ -183,30 +167,22 @@ function renderIssueSection(title, issues) {
 
 async function main() {
 	try {
-		const options = parseOptions(process.argv.slice(2));
-
-		if (options.help) {
-			console.log('Usage: node ./scripts/check-public-api-docs.mjs [--include-accessors]');
+		if (process.argv.includes('--help') || process.argv.includes('-h')) {
+			console.log('Usage: node ./scripts/check-public-api-docs.mjs');
 			console.log('');
-			console.log('Checks the exported public API reachable from src/index.ts.');
+			console.log(`Checks the exported public API reachable from ${ENTRY_POINT}.`);
 			console.log('Skips private/protected/inherited members and any API path segment starting with "_".');
-			console.log('Requires a JSDoc docstring and at least one @example tag for every included API item.');
-			console.log('');
-			console.log('Options:');
 			console.log(
-				'  --include-accessors  Include exported accessors/getters in addition to functions and methods.'
+				'Requires a JSDoc docstring and at least one @example tag for every exported function, method, and accessor.'
 			);
 			return;
 		}
 
-		const targetKinds = getTargetKinds(options);
 		const project = await loadProject();
 		const reflections = project
-			.getReflectionsByKind(targetKinds)
-			.filter((reflection) => isIncludedReflection(reflection, targetKinds));
-		const scopeLabel = options.includeAccessors
-			? 'exported functions, methods, and accessors'
-			: 'exported functions and methods';
+			.getReflectionsByKind(TARGET_KINDS)
+			.filter((reflection) => isIncludedReflection(reflection, TARGET_KINDS));
+		const scopeLabel = 'exported functions, methods, and accessors';
 
 		const missingDocstrings = reflections
 			.filter((reflection) => !hasDocstring(reflection))
@@ -222,9 +198,6 @@ async function main() {
 			console.log('Public API documentation check passed.');
 			console.log(`Scanned ${reflections.length} ${scopeLabel} from ${ENTRY_POINT}.`);
 			console.log('Policy: skip private/protected/inherited members and any API path segment starting with "_".');
-			if (!options.includeAccessors) {
-				console.log('Accessors are excluded by default. Re-run with --include-accessors to check them too.');
-			}
 			console.log('Every included API item has a JSDoc docstring and at least one @example tag.');
 			return;
 		}
@@ -232,9 +205,6 @@ async function main() {
 		console.error('Public API documentation check failed.');
 		console.error(`Scanned ${reflections.length} ${scopeLabel} from ${ENTRY_POINT}.`);
 		console.error('Policy: skip private/protected/inherited members and any API path segment starting with "_".');
-		if (!options.includeAccessors) {
-			console.error('Accessors are excluded by default. Re-run with --include-accessors to check them too.');
-		}
 		console.error(
 			`Found ${missingDocstrings.length + missingExamples.length} issue(s): ${missingDocstrings.length} missing docstring, ${missingExamples.length} missing @example.`
 		);
