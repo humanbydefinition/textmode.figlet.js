@@ -48,18 +48,6 @@ jobs:
                   fetch-depth: 0
                   token: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Fetch all tags
-              run: |
-                  git fetch origin '+refs/tags/*:refs/tags/*' --force --depth=1
-                  git fetch --tags --force
-                  echo "Tags on this branch:"
-                  TAGS="$(git tag --merged HEAD | grep -E '^v[0-9]' || true)"
-                  if [ -n "$TAGS" ]; then
-                      printf '%s\n' "$TAGS" | sort -V | tail -10
-                  else
-                      echo "No release tags found on this branch yet."
-                  fi
-
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
