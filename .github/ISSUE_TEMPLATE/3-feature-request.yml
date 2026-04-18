@@ -1,0 +1,47 @@
+name: New Feature Request
+description: Request a new capability to be added to textmode.figlet.js.
+labels: [Feature Request]
+body:
+  - type: textarea
+    id: access
+    attributes:
+      label: Access and usability impact
+      description: How would this improve FIGlet workflows or make the add-on easier to use, learn, or extend?
+    validations:
+      required: true
+  - type: checkboxes
+    id: area
+    attributes:
+      label: Most relevant area
+      description: You may select more than one.
+      options:
+        - label: Plugin installation / lifecycle
+        - label: FIGfont parsing
+        - label: Layout engine / smushing
+        - label: Font loading / fetch
+        - label: Drawing / measurement API
+        - label: Alignment / baseline
+        - label: textmode.js integration
+        - label: Build / types / packaging
+        - label: Documentation / examples
+        - label: Other
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What are you unable to do today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed feature
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples or prior art
+      description: Similar APIs in FIGlet tooling, creative-coding libraries, terminal art tools, or your own sketches.
+    validations:
+      required: false
