@@ -2,8 +2,6 @@
  * @title TextmodeFigFont.planText
  * @author codex
  */
-const { textmode, FigletPlugin } = window;
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
@@ -47,7 +45,7 @@ function drawPlan(renderPlan, originX, originY) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(window.FigletExampleFonts.bulbhead);
+	font = await t.loadFigFont(FigletExampleFonts.bulbhead);
 	plan = font.planText('PLAN TEXT WRAPS WORDS', {
 		maxCols: 58,
 		wrap: 'word',

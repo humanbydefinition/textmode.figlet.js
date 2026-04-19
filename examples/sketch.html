@@ -29,18 +29,6 @@
 				return null;
 			}
 
-			function resolveDisplayPath() {
-				if (rawPath) {
-					return rawPath;
-				}
-
-				if (group && entry) {
-					return `${group}/${entry}`;
-				}
-
-				return null;
-			}
-
 			function isValidPath(examplePath) {
 				const segments = examplePath.split('/');
 				return (
@@ -61,15 +49,11 @@
 			}
 
 			const examplePath = resolveExamplePath();
-			const displayPath = resolveDisplayPath();
 
-			if (!examplePath || !displayPath || !isValidPath(examplePath)) {
+			if (!examplePath || !isValidPath(examplePath)) {
 				showError('Invalid example path.');
 			} else {
-				document.title = `textmode.figlet.js - ${displayPath}`;
-				const base = document.createElement('base');
-				base.href = `./${examplePath}/`;
-				document.head.appendChild(base);
+				document.title = `textmode.figlet.js - ${examplePath}`;
 
 				window.textmode = textmodeModule.textmode;
 				window.TextmodeErrorLevel = textmodeModule.TextmodeErrorLevel;
@@ -80,11 +64,10 @@
 					colossal: 'https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Colossal.flf',
 					isometric1: 'https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Isometric1.flf',
 				});
-				window.__TEXTMODE_EXAMPLE_PATH__ = examplePath;
 
 				const script = document.createElement('script');
-				script.src = './sketch.js';
-				script.onerror = () => showError(`Unable to load ${displayPath}.`);
+				script.src = `./${examplePath}/sketch.js`;
+				script.onerror = () => showError(`Unable to load ${examplePath}.`);
 				document.body.appendChild(script);
 			}
 		</script>

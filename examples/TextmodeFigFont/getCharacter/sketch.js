@@ -2,8 +2,6 @@
  * @title TextmodeFigFont.getCharacter
  * @author codex
  */
-const { textmode, FigletPlugin } = window;
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
@@ -49,7 +47,7 @@ function drawLines(lines, originX, originY, color = [124, 214, 255]) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(window.FigletExampleFonts.bulbhead);
+	font = await t.loadFigFont(FigletExampleFonts.bulbhead);
 	figCharacter = font.getCharacter('A');
 	previewLines = (figCharacter?.lines ?? []).map((line) => line.replaceAll(font.hardblank, ' '));
 });

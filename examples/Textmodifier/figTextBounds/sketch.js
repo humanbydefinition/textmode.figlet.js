@@ -2,8 +2,6 @@
  * @title Textmodifier.figTextBounds
  * @author codex
  */
-const { textmode, FigletPlugin } = window;
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
@@ -58,7 +56,7 @@ function drawFrame(cols, rows, originX, originY, color = [255, 120, 150]) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(window.FigletExampleFonts.bulbhead);
+	font = await t.loadFigFont(FigletExampleFonts.bulbhead);
 	t.figFont(font);
 	t.figTextAlign('center');
 	t.figTextBaseline('center');

@@ -2,8 +2,6 @@
  * @title TextmodeFigFont.measureText
  * @author codex
  */
-const { textmode, FigletPlugin } = window;
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
@@ -78,7 +76,7 @@ function drawBounds(cols, rows, originX, originY, color = [255, 120, 150]) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(window.FigletExampleFonts.colossal);
+	font = await t.loadFigFont(FigletExampleFonts.colossal);
 	measurement = font.measureText('MEASURE');
 	rendered = font.renderText('MEASURE');
 });

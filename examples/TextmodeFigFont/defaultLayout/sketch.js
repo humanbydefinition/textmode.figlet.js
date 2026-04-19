@@ -2,8 +2,6 @@
  * @title TextmodeFigFont.defaultLayout
  * @author codex
  */
-const { textmode, FigletPlugin } = window;
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
@@ -41,7 +39,7 @@ function drawPlan(renderPlan, originX, originY, color = [124, 214, 255]) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(window.FigletExampleFonts.bulbhead);
+	font = await t.loadFigFont(FigletExampleFonts.bulbhead);
 	plan = font.planText('LAYOUT', {
 		horizontalLayout: font.defaultLayout,
 	});

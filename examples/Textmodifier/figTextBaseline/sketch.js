@@ -2,8 +2,6 @@
  * @title Textmodifier.figTextBaseline
  * @author codex
  */
-const { textmode, FigletPlugin } = window;
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
@@ -40,7 +38,7 @@ function drawHorizontalGuide(row, left, right, color = [64, 72, 96]) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(window.FigletExampleFonts.bulbhead);
+	font = await t.loadFigFont(FigletExampleFonts.bulbhead);
 	t.figFont(font);
 	t.figTextAlign('center');
 });

@@ -2,8 +2,6 @@
  * @title TextmodeFigFont.characters
  * @author codex
  */
-const { textmode, FigletPlugin } = window;
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
@@ -48,7 +46,7 @@ function drawGrid(grid, originX, originY, color = [124, 214, 255]) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(window.FigletExampleFonts.bulbhead);
+	font = await t.loadFigFont(FigletExampleFonts.bulbhead);
 	rendered = font.renderText('ABC');
 });
 

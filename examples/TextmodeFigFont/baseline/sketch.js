@@ -2,8 +2,6 @@
  * @title TextmodeFigFont.baseline
  * @author codex
  */
-const { textmode, FigletPlugin } = window;
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
@@ -60,7 +58,7 @@ function drawBaseline(originX, originY, cols, baseline) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(window.FigletExampleFonts.colossal);
+	font = await t.loadFigFont(FigletExampleFonts.colossal);
 	rendered = font.renderText('BASE');
 });
 
