@@ -46,7 +46,7 @@ function getWaveColor(phase, seed, from, to) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(FigletExampleFonts.bulbhead);
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
 	t.figFont(font);
 	t.figTextAlign('center');
 	t.figTextBaseline('center');

@@ -47,7 +47,7 @@ function drawGrid(grid, originX, originY) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(FigletExampleFonts.isometric1);
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Isometric1.flf');
 	rendered = font.renderText('GRID\nAPI');
 });
 

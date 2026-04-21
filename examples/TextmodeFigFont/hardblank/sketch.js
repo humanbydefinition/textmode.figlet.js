@@ -46,7 +46,7 @@ function drawGrid(grid, originX, originY, color = [255, 214, 102]) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(FigletExampleFonts.bulbhead);
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
 	rendered = font.renderText('A B');
 });
 

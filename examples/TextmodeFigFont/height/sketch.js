@@ -58,7 +58,7 @@ function drawRuler(x, y, height) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(FigletExampleFonts.colossal);
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Colossal.flf');
 	rendered = font.renderText('HI');
 });
 

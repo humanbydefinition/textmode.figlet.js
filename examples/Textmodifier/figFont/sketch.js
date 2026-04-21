@@ -28,8 +28,8 @@ function writeLabel(text, y, color = [220, 220, 220]) {
 
 t.setup(async () => {
 	[bulbhead, colossal] = await Promise.all([
-		t.loadFigFont(FigletExampleFonts.bulbhead),
-		t.loadFigFont(FigletExampleFonts.colossal),
+		t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf'),
+		t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Colossal.flf'),
 	]);
 
 	t.figTextAlign('center');

@@ -58,7 +58,7 @@ function drawBaseline(originX, originY, cols, baseline) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(FigletExampleFonts.colossal);
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Colossal.flf');
 	rendered = font.renderText('BASE');
 });
 

@@ -38,7 +38,7 @@ function drawHorizontalGuide(row, left, right, color = [64, 72, 96]) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(FigletExampleFonts.bulbhead);
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
 	t.figFont(font);
 	t.figTextAlign('center');
 });

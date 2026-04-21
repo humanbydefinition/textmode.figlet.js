@@ -45,7 +45,7 @@ function drawPlan(renderPlan, originX, originY) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(FigletExampleFonts.bulbhead);
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
 	plan = font.planText('PLAN TEXT WRAPS WORDS', {
 		maxCols: 58,
 		wrap: 'word',

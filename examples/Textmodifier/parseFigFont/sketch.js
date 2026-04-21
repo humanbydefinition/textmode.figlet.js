@@ -46,7 +46,7 @@ function drawGrid(grid, originX, originY, color = [255, 120, 150]) {
 }
 
 t.setup(async () => {
-	const response = await fetch(FigletExampleFonts.bulbhead);
+	const response = await fetch('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
 	const data = await response.text();
 	font = t.parseFigFont('Bulbhead copy', data);
 	t.figFont(font);
