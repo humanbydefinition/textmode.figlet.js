@@ -180,8 +180,8 @@ export function installTextmodifierFigletExtensions(textmodifier: Textmodifier):
 
 				this.char(cell.char);
 
-				// textmode.js resets the active character color inside char(),
-				// so any per-cell override must be applied after selecting the glyph.
+				// Apply per-cell overrides after selecting the glyph so the emitted draw
+				// uses the requested colors regardless of the runtime's internal ordering.
 				if (charColor !== undefined) {
 					applyResolvedColor(this, 'charColor', charColor);
 				}

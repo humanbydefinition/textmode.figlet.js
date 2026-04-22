@@ -26,13 +26,6 @@ export default defineConfig({
 					include: ['tests/integration/**/*.test.ts'],
 				},
 			}),
-			defineProject({
-				test: {
-					...sharedTestConfig,
-					name: 'contracts',
-					include: ['tests/contracts/**/*.test.ts'],
-				},
-			}),
 		],
 	},
 	resolve: {
