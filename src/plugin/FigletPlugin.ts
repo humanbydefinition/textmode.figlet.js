@@ -1,5 +1,5 @@
 import type { Textmodifier } from 'textmode.js';
-import type { TextmodePlugin, TextmodePluginAPI } from 'textmode.js/plugins';
+import type { TextmodePlugin, TextmodePluginContext } from 'textmode.js/plugins';
 import packageJson from '../../package.json';
 
 import { installTextmodifierFigletExtensions, uninstallTextmodifierFigletExtensions } from '../extensions';
@@ -14,11 +14,11 @@ export const FigletPlugin: TextmodePlugin = {
 	name: packageJson.name,
 	version: packageJson.version,
 
-	install(textmodifier: Textmodifier, _context: TextmodePluginAPI): void {
+	install(textmodifier: Textmodifier, _context: TextmodePluginContext): void {
 		installTextmodifierFigletExtensions(textmodifier);
 	},
 
-	uninstall(textmodifier: Textmodifier, _context: TextmodePluginAPI): void {
+	uninstall(textmodifier: Textmodifier, _context: TextmodePluginContext): void {
 		uninstallTextmodifierFigletExtensions(textmodifier);
 	},
 };
