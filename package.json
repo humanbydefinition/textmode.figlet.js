@@ -1,7 +1,7 @@
 {
 	"name": "textmode.figlet.js",
 	"version": "0.1.0",
-	"description": "FIGlet font add-on for textmode.js",
+	"description": "FIGlet font support for textmode.js",
 	"type": "module",
 	"types": "./dist/types/index.d.ts",
 	"main": "./dist/textmode.figlet.umd.js",
@@ -62,7 +62,7 @@
 		"markdownlint-cli2": "^0.20.0",
 		"prettier": "^3.7.4",
 		"semantic-release": "^25.0.3",
-		"textmode.js": "0.11.0-beta.5",
+		"textmode.js": "^0.12.0",
 		"typedoc": "^0.28.13",
 		"typedoc-plugin-frontmatter": "^1.3.1",
 		"typedoc-plugin-markdown": "^4.9.0",
