@@ -4,7 +4,7 @@ import { vi } from 'vitest';
 import { RenderState } from './RenderState';
 
 // This harness intentionally models only the narrow Textmodifier surface used by
-// fast integration tests. Runtime-sensitive behavior belongs in tests/contracts.
+// the plugin's integration tests.
 
 type TestFont = {
 	characters: Array<{ character: string }>;

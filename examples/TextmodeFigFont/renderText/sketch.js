@@ -2,8 +2,6 @@
  * @title TextmodeFigFont.renderText
  * @author codex
  */
-const { textmode, FigletPlugin } = window;
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
@@ -49,7 +47,7 @@ function drawGrid(grid, originX, originY) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(window.FigletExampleFonts.isometric1);
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Isometric1.flf');
 	rendered = font.renderText('GRID\nAPI');
 });
 

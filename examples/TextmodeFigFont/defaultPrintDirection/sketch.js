@@ -2,8 +2,6 @@
  * @title TextmodeFigFont.defaultPrintDirection
  * @author codex
  */
-const { textmode, FigletPlugin } = window;
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
@@ -41,7 +39,7 @@ function drawPlan(renderPlan, originX, originY, color = [255, 214, 102]) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(window.FigletExampleFonts.bulbhead);
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
 	plan = font.planText('FLOW', {
 		direction: 'font',
 	});

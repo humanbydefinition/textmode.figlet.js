@@ -126,7 +126,7 @@
 			];
 
 			function getExampleHref(groupName, entryName) {
-				return `./sketch.html?path=${encodeURIComponent(`${groupName}/${entryName}`)}`;
+				return `./sketch.html?group=${encodeURIComponent(groupName)}&entry=${encodeURIComponent(entryName)}`;
 			}
 
 			function render(groups) {

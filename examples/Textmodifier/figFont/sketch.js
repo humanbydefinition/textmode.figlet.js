@@ -2,8 +2,6 @@
  * @title Textmodifier.figFont
  * @author codex
  */
-const { textmode, FigletPlugin } = window;
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
@@ -30,8 +28,8 @@ function writeLabel(text, y, color = [220, 220, 220]) {
 
 t.setup(async () => {
 	[bulbhead, colossal] = await Promise.all([
-		t.loadFigFont(window.FigletExampleFonts.bulbhead),
-		t.loadFigFont(window.FigletExampleFonts.colossal),
+		t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf'),
+		t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Colossal.flf'),
 	]);
 
 	t.figTextAlign('center');

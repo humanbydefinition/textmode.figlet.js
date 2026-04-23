@@ -2,8 +2,6 @@
  * @title Textmodifier.figTextAlign
  * @author codex
  */
-const { textmode, FigletPlugin } = window;
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
@@ -40,7 +38,7 @@ function drawVerticalGuide(col, top, bottom, color = [64, 72, 96]) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(window.FigletExampleFonts.bulbhead);
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
 	t.figFont(font);
 	t.figTextBaseline('center');
 });

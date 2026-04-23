@@ -2,8 +2,6 @@
  * @title TextmodeFigFont.header
  * @author codex
  */
-const { textmode, FigletPlugin } = window;
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
@@ -48,7 +46,7 @@ function drawGrid(grid, originX, originY, color = [255, 214, 102]) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(window.FigletExampleFonts.colossal);
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Colossal.flf');
 	rendered = font.renderText('HDR');
 });
 

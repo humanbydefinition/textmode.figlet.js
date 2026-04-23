@@ -2,8 +2,6 @@
  * @title Textmodifier.figTextHeight
  * @author codex
  */
-const { textmode, FigletPlugin } = window;
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
@@ -47,7 +45,7 @@ function drawVerticalMeasure(x, originY, rows, color = [255, 120, 150]) {
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont(window.FigletExampleFonts.bulbhead);
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
 	t.figFont(font);
 	t.figTextAlign('center');
 	t.figTextBaseline('center');
