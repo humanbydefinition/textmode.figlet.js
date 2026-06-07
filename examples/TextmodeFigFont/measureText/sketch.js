@@ -2,100 +2,84 @@
  * @title TextmodeFigFont.measureText
  * @author codex
  */
+
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
 	fontSize: 8,
-	frameRate: 60,
 	plugins: [FigletPlugin],
 });
 
+const labelLayer = t.layers.add();
+
 let font;
-let measurement;
-let rendered;
+let dimensions = { cols: 0, rows: 0 };
 
-function writeLabel(text, y, color = [220, 220, 220]) {
-	const startX = -Math.floor(text.length / 2);
-	t.charColor(...color);
-
-	for (let i = 0; i < text.length; i++) {
-		t.push();
-		t.translate(startX + i, y);
-		t.char(text[i]);
-		t.point();
-		t.pop();
-	}
-}
-
-function drawGrid(grid, originX, originY, color = [124, 214, 255]) {
-	t.charColor(...color);
-
-	for (let row = 0; row < grid.length; row++) {
-		for (let col = 0; col < grid[row].length; col++) {
-			const cell = grid[row][col];
-			if (cell === ' ') {
-				continue;
-			}
-
-			t.push();
-			t.translate(originX + col, originY + row);
-			t.char(cell);
-			t.point();
-			t.pop();
-		}
-	}
-}
-
-function drawBounds(cols, rows, originX, originY, color = [255, 120, 150]) {
-	t.charColor(...color);
-	t.char('+');
-
-	for (let col = 0; col < cols; col++) {
-		t.push();
-		t.translate(originX + col, originY);
-		t.point();
-		t.pop();
-
-		t.push();
-		t.translate(originX + col, originY + rows - 1);
-		t.point();
-		t.pop();
-	}
-
-	for (let row = 0; row < rows; row++) {
-		t.push();
-		t.translate(originX, originY + row);
-		t.point();
-		t.pop();
-
-		t.push();
-		t.translate(originX + cols - 1, originY + row);
-		t.point();
-		t.pop();
-	}
+function drawText(text, x, y, r = 220, g = 230, b = 255) {
+	t.push();
+	t.printAlign('left', 'top');
+	t.charColor(r, g, b);
+	t.print(text, x, y);
+	t.pop();
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Colossal.flf');
-	measurement = font.measureText('MEASURE');
-	rendered = font.renderText('MEASURE');
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
+	t.figFont(font);
+	t.figTextAlign('center');
+	t.figTextBaseline('center');
+});
+
+labelLayer.draw(() => {
+	t.clear();
+	const left = -Math.floor(t.grid.cols / 2);
+	const top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3;
+	const x = left + 3;
+
+	drawText('TEXTMODEFIGFONT.MEASURETEXT', x, y++, 100, 255, 140);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	drawText('CONCEPT: OFFSCREEN TEXT MEASURE', x, y++, 100, 220, 255);
+	drawText('Measures size without rendering cells.', x, y++, 140, 160, 190);
+	drawText('Calculates columns and rows size.', x, y++, 140, 160, 190);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	if (font) {
+		const w = dimensions.cols;
+		const h = dimensions.rows;
+		drawText(`Size: ${w}x${h}`, x, y++, 140, 255, 180);
+	} else {
+		drawText('Measuring text...', x, y++, 255, 180, 100);
+	}
 });
 
 t.draw(() => {
-	t.background(8, 10, 18);
+	t.background(10, 15, 12);
 
-	if (!font || !measurement || !rendered) {
-		writeLabel('measuring rendered bounds with measureText()', 0, [255, 214, 102]);
-		return;
+	if (!font) return;
+
+	// Measure text size prior to drawing
+	dimensions = font.measureText('MEASURE');
+
+	const time = t.secs * 1.5;
+
+	// Draw FIGlet text
+	t.figText('MEASURE', 0, 0);
+
+	// Draw measured frame
+	const w = dimensions.cols;
+	const h = dimensions.rows;
+	const halfW = Math.floor(w / 2);
+	const halfH = Math.floor(h / 2);
+
+	t.push();
+	t.charColor(255, 200, 100);
+	for (let col = -halfW - 2; col <= -halfW + w + 1; col++) {
+		const wave = Math.sin(time + col * 0.3);
+		const borderChar = wave > 0 ? '=' : '-';
+		t.print(borderChar, col, -halfH - 2);
+		t.print(borderChar, col, -halfH + h + 1);
 	}
-
-	const originX = -Math.floor(measurement.cols / 2);
-	const originY = -4;
-
-	writeLabel('TextmodeFigFont.measureText', -11, [255, 214, 102]);
-	drawBounds(measurement.cols, measurement.rows, originX, originY, [255, 120, 150]);
-	drawGrid(rendered.grid, originX, originY, [124, 214, 255]);
-	writeLabel(`bounds: ${measurement.cols} cols × ${measurement.rows} rows`, 9, [220, 230, 255]);
+	t.pop();
 });
 
 t.windowResized(() => {

@@ -2,66 +2,79 @@
  * @title TextmodeFigFont.renderText
  * @author codex
  */
+
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
 	fontSize: 8,
-	frameRate: 60,
 	plugins: [FigletPlugin],
 });
+
+const labelLayer = t.layers.add();
 
 let font;
 let rendered;
 
-function writeLabel(text, y, color = [220, 220, 220]) {
-	const startX = -Math.floor(text.length / 2);
-	t.charColor(...color);
-
-	for (let i = 0; i < text.length; i++) {
-		t.push();
-		t.translate(startX + i, y);
-		t.char(text[i]);
-		t.point();
-		t.pop();
-	}
+function drawText(text, x, y, r = 220, g = 230, b = 255) {
+	t.push();
+	t.printAlign('left', 'top');
+	t.charColor(r, g, b);
+	t.print(text, x, y);
+	t.pop();
 }
 
-function drawGrid(grid, originX, originY) {
-	for (let row = 0; row < grid.length; row++) {
-		const wave = Math.sin(t.frameCount * 0.07 + row * 0.45) * 0.5 + 0.5;
-		t.charColor(110 + wave * 145, 170 + row * 8, 255);
+t.setup(async () => {
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
+	t.figFont(font);
+	t.figTextAlign('center');
+	t.figTextBaseline('center');
+	rendered = font.renderText('GRID');
+});
 
-		for (let col = 0; col < grid[row].length; col++) {
-			const cell = grid[row][col];
-			if (cell === ' ') {
-				continue;
-			}
+labelLayer.draw(() => {
+	t.clear();
+	const left = -Math.floor(t.grid.cols / 2);
+	const top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3;
+	const x = left + 3;
+
+	drawText('TEXTMODEFIGFONT.RENDERTEXT', x, y++, 100, 255, 140);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	drawText('CONCEPT: 2D GRID RENDERING', x, y++, 100, 220, 255);
+	drawText('Renders font directly to a 2D grid.', x, y++, 140, 160, 190);
+	drawText('Returns grid rows and cols size.', x, y++, 140, 160, 190);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	if (font && rendered) {
+		drawText(`Grid: ${rendered.cols}x${rendered.rows}`, x, y++, 140, 255, 180);
+	} else {
+		drawText('Rendering text grid...', x, y++, 255, 180, 100);
+	}
+});
+
+t.draw(() => {
+	t.background(15, 10, 12);
+
+	if (!font || !rendered) return;
+
+	const time = t.secs * 1.5;
+	const startX = -Math.floor(rendered.cols / 2);
+	const startY = -Math.floor(rendered.rows / 2);
+
+	for (let row = 0; row < rendered.grid.length; row++) {
+		for (let col = 0; col < rendered.grid[row].length; col++) {
+			const char = rendered.grid[row][col];
+			if (char === ' ') continue;
 
 			t.push();
-			t.translate(originX + col, originY + row);
-			t.char(cell);
+			t.translate(startX + col, startY + row);
+			// Color waves on grid cells
+			const wave = 0.5 + 0.5 * Math.sin(time + col * 0.15 + row * 0.3);
+			t.charColor(Math.round(255 * wave), Math.round(120 + 135 * (1.0 - wave)), 200);
+			t.char(char);
 			t.point();
 			t.pop();
 		}
 	}
-}
-
-t.setup(async () => {
-	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Isometric1.flf');
-	rendered = font.renderText('GRID\nAPI');
-});
-
-t.draw(() => {
-	t.background(8, 10, 20);
-
-	if (!font || !rendered) {
-		writeLabel('rendering a character grid with renderText()', 0, [255, 214, 102]);
-		return;
-	}
-
-	writeLabel('TextmodeFigFont.renderText', -12, [255, 214, 102]);
-	drawGrid(rendered.grid, -Math.floor(rendered.cols / 2), -7);
-	writeLabel(`rendered grid: ${rendered.cols} cols × ${rendered.rows} rows`, 8, [220, 230, 255]);
 });
 
 t.windowResized(() => {

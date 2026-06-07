@@ -2,68 +2,96 @@
  * @title TextmodeFigFont.hardblank
  * @author codex
  */
+
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
 	fontSize: 8,
-	frameRate: 60,
 	plugins: [FigletPlugin],
 });
 
+const labelLayer = t.layers.add();
 let font;
-let rendered;
 
-function writeLabel(text, y, color = [220, 220, 220]) {
-	const startX = -Math.floor(text.length / 2);
-	t.charColor(...color);
-
-	for (let i = 0; i < text.length; i++) {
-		t.push();
-		t.translate(startX + i, y);
-		t.char(text[i]);
-		t.point();
-		t.pop();
-	}
-}
-
-function drawGrid(grid, originX, originY, color = [255, 214, 102]) {
-	t.charColor(...color);
-
-	for (let row = 0; row < grid.length; row++) {
-		for (let col = 0; col < grid[row].length; col++) {
-			const cell = grid[row][col];
-			if (cell === ' ') {
-				continue;
-			}
-
-			t.push();
-			t.translate(originX + col, originY + row);
-			t.char(cell);
-			t.point();
-			t.pop();
-		}
-	}
+function drawText(text, x, y, r = 220, g = 230, b = 255) {
+	t.push();
+	t.printAlign('left', 'top');
+	t.charColor(r, g, b);
+	t.print(text, x, y);
+	t.pop();
 }
 
 t.setup(async () => {
 	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
-	rendered = font.renderText('A B');
+	t.figFont(font);
+});
+
+labelLayer.draw(() => {
+	t.clear();
+	const left = -Math.floor(t.grid.cols / 2);
+	const top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3;
+	const x = left + 3;
+
+	drawText('TEXTMODEFIGFONT.HARDBLANK', x, y++, 100, 255, 140);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	drawText('CONCEPT: HARDBLANK CHARACTER', x, y++, 100, 220, 255);
+	drawText('A special glyph used for padding.', x, y++, 140, 160, 190);
+	drawText('Replaced by space in final layout.', x, y++, 140, 160, 190);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	if (font) {
+		drawText(`Hardblank: '${font.hardblank}'`, x, y++, 140, 255, 180);
+	} else {
+		drawText('Loading...', x, y++, 255, 180, 100);
+	}
 });
 
 t.draw(() => {
-	t.background(9, 10, 18);
+	t.background(10, 12, 18);
 
-	if (!font || !rendered) {
-		writeLabel('loading hardblank metadata...', 0, [255, 214, 102]);
-		return;
+	if (!font) return;
+
+	const charInfo = font.getCharacter('H');
+	if (!charInfo) return;
+
+	const time = t.secs * 2.0;
+	const h = charInfo.lines.length;
+	const w = charInfo.width;
+	const startY = -Math.floor(h / 2);
+
+	// Left: Raw glyph with visible hardblank in red
+	t.push();
+	t.translate(-Math.floor(w / 2) - 8, startY);
+	for (let r = 0; r < h; r++) {
+		const line = charInfo.lines[r];
+		for (let c = 0; c < line.length; c++) {
+			const char = line[c];
+			if (char === font.hardblank) {
+				const pulse = 0.5 + 0.5 * Math.sin(time + r * 0.5);
+				t.charColor(Math.round(255 * pulse), 60, 60);
+				t.print(font.hardblank, c, r);
+			} else if (char !== ' ') {
+				t.charColor(150, 200, 255);
+				t.print(char, c, r);
+			}
+		}
 	}
+	t.pop();
 
-	const codePoint = font.hardblank.codePointAt(0);
-
-	writeLabel('TextmodeFigFont.hardblank', -12, [255, 214, 102]);
-	drawGrid(rendered.grid, -Math.floor(rendered.cols / 2), -6, [124, 214, 255]);
-	writeLabel(`font.hardblank -> "${font.hardblank}"`, 8, [220, 230, 255]);
-	writeLabel(`code point: ${codePoint}`, 11, [160, 180, 220]);
+	// Right: Processed glyph (hardblank converted to space)
+	t.push();
+	t.translate(-Math.floor(w / 2) + 8, startY);
+	for (let r = 0; r < h; r++) {
+		const line = charInfo.lines[r];
+		for (let c = 0; c < line.length; c++) {
+			const char = line[c];
+			if (char !== font.hardblank && char !== ' ') {
+				t.charColor(100, 255, 140);
+				t.print(char, c, r);
+			}
+		}
+	}
+	t.pop();
 });
 
 t.windowResized(() => {

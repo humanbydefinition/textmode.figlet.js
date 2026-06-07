@@ -2,68 +2,85 @@
  * @title TextmodeFigFont.getCharacter
  * @author codex
  */
+
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
 	fontSize: 8,
-	frameRate: 60,
 	plugins: [FigletPlugin],
 });
 
+const labelLayer = t.layers.add();
+
 let font;
-let figCharacter;
-let previewLines = [];
+const chars = ['A', '5', '&', '?', '@', '#'];
+let currentChar = 'A';
+let charCode = 65;
+let charWidth = 0;
 
-function writeLabel(text, y, color = [220, 220, 220]) {
-	const startX = -Math.floor(text.length / 2);
-	t.charColor(...color);
-
-	for (let i = 0; i < text.length; i++) {
-		t.push();
-		t.translate(startX + i, y);
-		t.char(text[i]);
-		t.point();
-		t.pop();
-	}
-}
-
-function drawLines(lines, originX, originY, color = [124, 214, 255]) {
-	t.charColor(...color);
-
-	for (let row = 0; row < lines.length; row++) {
-		for (let col = 0; col < lines[row].length; col++) {
-			const cell = lines[row][col];
-			if (cell === ' ') {
-				continue;
-			}
-
-			t.push();
-			t.translate(originX + col, originY + row);
-			t.char(cell);
-			t.point();
-			t.pop();
-		}
-	}
+function drawText(text, x, y, r = 220, g = 230, b = 255) {
+	t.push();
+	t.printAlign('left', 'top');
+	t.charColor(r, g, b);
+	t.print(text, x, y);
+	t.pop();
 }
 
 t.setup(async () => {
 	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
-	figCharacter = font.getCharacter('A');
-	previewLines = (figCharacter?.lines ?? []).map((line) => line.replaceAll(font.hardblank, ' '));
+	t.figFont(font);
+	t.figTextAlign('center');
+	t.figTextBaseline('center');
+});
+
+labelLayer.draw(() => {
+	t.clear();
+	const left = -Math.floor(t.grid.cols / 2);
+	const top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3;
+	const x = left + 3;
+
+	drawText('TEXTMODEFIGFONT.GETCHARACTER', x, y++, 100, 255, 140);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	drawText('CONCEPT: INDIVIDUAL GLYPH INSPECT', x, y++, 100, 220, 255);
+	drawText('Gets metadata for a single character.', x, y++, 140, 160, 190);
+	drawText('Accesses glyph vector dimensions.', x, y++, 140, 160, 190);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	if (font) {
+		drawText(`Char: '${currentChar}' Code: ${charCode}`, x, y++, 140, 255, 180);
+		drawText(`Glyph width: ${charWidth} cells`, x, y++, 140, 255, 180);
+	} else {
+		drawText('Loading font...', x, y++, 255, 180, 100);
+	}
 });
 
 t.draw(() => {
-	t.background(10, 9, 18);
+	t.background(10, 12, 14);
 
-	if (!font || !figCharacter) {
-		writeLabel('resolving FIGcharacter metadata with getCharacter()', 0, [255, 214, 102]);
-		return;
+	if (!font) return;
+
+	const index = Math.floor(t.secs / 2.0) % chars.length;
+	currentChar = chars[index];
+	charCode = currentChar.charCodeAt(0);
+
+	const charInfo = font.getCharacter(currentChar);
+	if (charInfo) {
+		charWidth = charInfo.width;
+
+		const linesCount = charInfo.lines.length;
+		const startY = -Math.floor(linesCount / 2);
+		const startX = -Math.floor(charWidth / 2);
+
+		t.push();
+		const time = t.secs * 2.0;
+		// Wave color
+		t.charColor(Math.round(150 + 105 * Math.sin(time)), 255, Math.round(180 + 75 * Math.cos(time)));
+
+		for (let r = 0; r < linesCount; r++) {
+			t.print(charInfo.lines[r], startX, startY + r);
+		}
+		t.pop();
 	}
-
-	writeLabel('TextmodeFigFont.getCharacter', -10, [255, 214, 102]);
-	drawLines(previewLines, -Math.floor(figCharacter.width / 2), -4, [124, 214, 255]);
-	writeLabel(`glyph: ${String.fromCodePoint(figCharacter.code)} (${figCharacter.code})`, 6, [220, 230, 255]);
-	writeLabel(`width: ${figCharacter.width} | rows: ${figCharacter.lines.length}`, 9, [160, 180, 220]);
 });
 
 t.windowResized(() => {

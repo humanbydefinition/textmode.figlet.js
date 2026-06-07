@@ -2,46 +2,25 @@
  * @title Textmodifier.figTextHeight
  * @author codex
  */
+
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
 	fontSize: 8,
-	frameRate: 60,
 	plugins: [FigletPlugin],
 });
 
-const sampleText = 'TALL';
-const sampleOptions = {
-	horizontalLayout: 'fitted',
-};
+const labelLayer = t.layers.add();
 
 let font;
-let width;
-let height;
+let textHeight = 0;
 
-function writeLabel(text, y, color = [220, 220, 220]) {
-	const startX = -Math.floor(text.length / 2);
-	t.charColor(...color);
-
-	for (let i = 0; i < text.length; i++) {
-		t.push();
-		t.translate(startX + i, y);
-		t.char(text[i]);
-		t.point();
-		t.pop();
-	}
-}
-
-function drawVerticalMeasure(x, originY, rows, color = [255, 120, 150]) {
-	t.charColor(...color);
-
-	for (let row = 0; row < rows; row++) {
-		t.push();
-		t.translate(x, originY + row);
-		t.char(row === 0 || row === rows - 1 ? '+' : '|');
-		t.point();
-		t.pop();
-	}
+function drawText(text, x, y, r = 220, g = 230, b = 255) {
+	t.push();
+	t.printAlign('left', 'top');
+	t.charColor(r, g, b);
+	t.print(text, x, y);
+	t.pop();
 }
 
 t.setup(async () => {
@@ -49,26 +28,63 @@ t.setup(async () => {
 	t.figFont(font);
 	t.figTextAlign('center');
 	t.figTextBaseline('center');
-	width = t.figTextWidth(sampleText, sampleOptions);
-	height = t.figTextHeight(sampleText, sampleOptions);
+});
+
+labelLayer.draw(() => {
+	t.clear();
+	const left = -Math.floor(t.grid.cols / 2);
+	const top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3;
+	const x = left + 3;
+
+	drawText('TEXTMODIFIER.FIGTEXTHEIGHT', x, y++, 100, 255, 140);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	drawText('CONCEPT: MEASURING RENDER HEIGHT', x, y++, 100, 220, 255);
+	drawText('Gets the exact grid height of text.', x, y++, 140, 160, 190);
+	drawText('Useful for vertical layouts.', x, y++, 140, 160, 190);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	if (font) {
+		drawText(`Measured height: ${textHeight} cells`, x, y++, 140, 255, 180);
+	} else {
+		drawText('Loading font...', x, y++, 255, 180, 100);
+	}
 });
 
 t.draw(() => {
-	t.background(8, 10, 18);
+	t.background(10, 10, 14);
 
-	if (!font || width === undefined || height === undefined) {
-		writeLabel('measuring rendered height with t.figTextHeight()', 0, [255, 214, 102]);
-		return;
+	if (!font) return;
+
+	textHeight = t.figTextHeight('HEIGHT');
+
+	const time = t.secs * 2.0;
+
+	// Draw the FIGlet text
+	t.figText('HEIGHT', 0, 0);
+
+	// Draw vertical rulers on the sides
+	const halfH = Math.floor(textHeight / 2);
+	t.push();
+	t.charColor(180, 100, 255);
+	for (let i = 0; i < textHeight; i++) {
+		// Left ruler at x = -20, right ruler at x = 20
+		const yPos = -halfH + i;
+		const wave = Math.sin(time + i * 0.4);
+		const charToUse = wave > 0 ? '█' : '▒';
+
+		t.push();
+		t.translate(-22, yPos);
+		t.char(charToUse);
+		t.point();
+		t.pop();
+
+		t.push();
+		t.translate(22, yPos);
+		t.char(charToUse);
+		t.point();
+		t.pop();
 	}
-
-	const originX = -Math.floor(width / 2);
-	const originY = -Math.floor(height / 2);
-
-	writeLabel('Textmodifier.figTextHeight', -12, [255, 214, 102]);
-	drawVerticalMeasure(originX - 3, originY, height);
-	t.charColor(124, 214, 255);
-	t.figText(sampleText, 0, 0, sampleOptions);
-	writeLabel(`height: ${height} rows`, 10, [220, 230, 255]);
+	t.pop();
 });
 
 t.windowResized(() => {
