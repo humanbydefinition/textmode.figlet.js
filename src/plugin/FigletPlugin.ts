@@ -1,5 +1,5 @@
 import type { Textmodifier } from 'textmode.js';
-import type { TextmodePlugin, TextmodePluginContext } from 'textmode.js/plugins';
+import type { TextmodePlugin, TextmodePluginContext } from 'textmode.js';
 import packageJson from '../../package.json';
 
 import { installTextmodifierFigletExtensions, uninstallTextmodifierFigletExtensions } from '../extensions';

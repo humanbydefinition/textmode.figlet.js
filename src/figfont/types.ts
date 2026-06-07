@@ -1,4 +1,4 @@
-import type { TextmodeColor } from 'textmode.js';
+import type { color } from 'textmode.js';
 
 /**
  * Required FIGfont character order defined by the FIGfont v2 spec:
@@ -91,7 +91,7 @@ export type FigPrintDirection = 'font' | 'ltr' | 'rtl';
 export type FigTextColorValue =
 	| number
 	| string
-	| TextmodeColor
+	| color.TextmodeColor
 	| [number, number, number]
 	| [number, number, number, number];
 
