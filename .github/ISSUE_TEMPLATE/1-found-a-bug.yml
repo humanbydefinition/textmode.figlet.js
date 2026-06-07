@@ -2,73 +2,73 @@ name: Bug Report
 description: Report broken or incorrect behavior in textmode.figlet.js.
 labels: [Bug]
 body:
-  - type: checkboxes
-    id: area
-    attributes:
-      label: Most relevant area
-      description: You may select more than one.
-      options:
-        - label: Plugin installation / lifecycle
-        - label: FIGfont parsing
-        - label: Layout engine / smushing
-        - label: Font loading / fetch
-        - label: Drawing / measurement API
-        - label: Alignment / baseline
-        - label: textmode.js integration
-        - label: Build / types / packaging
-        - label: Documentation / examples
-        - label: Other
-  - type: input
-    id: version
-    attributes:
-      label: textmode.figlet.js version
-      description: Example: 0.1.0-alpha.0
-      placeholder: 0.1.0-alpha.0
-  - type: input
-    id: core_version
-    attributes:
-      label: textmode.js version
-      description: Include the core library version too when the bug involves plugin installation or runtime integration.
-      placeholder: 0.11.0
-  - type: input
-    id: environment
-    attributes:
-      label: Browser, runtime, and OS
-      description: Include browser/version and OS. If relevant, include package manager, bundler, and import mode.
-      placeholder: Chrome 135, macOS 15.4, npm + Vite, ESM import
-  - type: textarea
-    id: reproduction
-    attributes:
-      label: Steps to reproduce
-      description: Include a minimal repro. A reduced code snippet or small repo using textmode.js plus FigletPlugin is ideal. Add console errors if present.
-      value: |
-        1.
-        2.
-        3.
+    - type: checkboxes
+      id: area
+      attributes:
+          label: Most relevant area
+          description: You may select more than one.
+          options:
+              - label: Plugin installation / lifecycle
+              - label: FIGfont parsing
+              - label: Layout engine / smushing
+              - label: Font loading / fetch
+              - label: Drawing / measurement API
+              - label: Alignment / baseline
+              - label: textmode.js integration
+              - label: Build / types / packaging
+              - label: Documentation / examples
+              - label: Other
+    - type: input
+      id: version
+      attributes:
+          label: textmode.figlet.js version
+          description: 'Example: 0.1.0-alpha.0'
+          placeholder: 0.1.0-alpha.0
+    - type: input
+      id: core_version
+      attributes:
+          label: textmode.js version
+          description: Include the core library version too when the bug involves plugin installation or runtime integration.
+          placeholder: 0.11.0
+    - type: input
+      id: environment
+      attributes:
+          label: Browser, runtime, and OS
+          description: Include browser/version and OS. If relevant, include package manager, bundler, and import mode.
+          placeholder: Chrome 135, macOS 15.4, npm + Vite, ESM import
+    - type: textarea
+      id: reproduction
+      attributes:
+          label: Steps to reproduce
+          description: 'Include a minimal repro. A reduced code snippet or small repo using textmode.js plus FigletPlugin is ideal. Add console errors if present.'
+          value: |
+              1.
+              2.
+              3.
 
-        Minimal repro:
+              Minimal repro:
 
-        ```js
-        // Paste the smallest example that still reproduces the issue.
-        ```
-    validations:
-      required: true
-  - type: textarea
-    id: expected
-    attributes:
-      label: Expected behavior
-    validations:
-      required: true
-  - type: textarea
-    id: actual
-    attributes:
-      label: Actual behavior
-    validations:
-      required: true
-  - type: textarea
-    id: notes
-    attributes:
-      label: Additional context
-      description: Screenshots, recordings, GPU details, stack traces, or related issues.
-    validations:
-      required: false
+              ```js
+              // Paste the smallest example that still reproduces the issue.
+              ```
+      validations:
+          required: true
+    - type: textarea
+      id: expected
+      attributes:
+          label: Expected behavior
+      validations:
+          required: true
+    - type: textarea
+      id: actual
+      attributes:
+          label: Actual behavior
+      validations:
+          required: true
+    - type: textarea
+      id: notes
+      attributes:
+          label: Additional context
+          description: Screenshots, recordings, GPU details, stack traces, or related issues.
+      validations:
+          required: false

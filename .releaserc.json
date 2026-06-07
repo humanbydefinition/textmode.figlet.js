@@ -44,18 +44,16 @@
 			}
 		],
 		[
+			"@semantic-release/git",
+			{
+				"assets": ["package.json", "package-lock.json"],
+				"message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+			}
+		],
+		[
 			"@semantic-release/github",
 			{
-				"assets": [
-					{
-						"path": "dist/textmode.figlet.esm.js",
-						"label": "ESM bundle"
-					},
-					{
-						"path": "dist/textmode.figlet.umd.js",
-						"label": "UMD bundle"
-					}
-				],
+				"assets": ["dist/textmode.figlet.esm.js", "dist/textmode.figlet.umd.js"],
 				"successComment": false,
 				"failComment": false,
 				"releasedLabels": false
