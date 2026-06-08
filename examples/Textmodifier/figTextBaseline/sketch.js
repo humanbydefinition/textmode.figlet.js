@@ -9,9 +9,9 @@ const t = textmode.create({
 	fontSize: 8,
 	plugins: [FigletPlugin],
 });
-const guideLayer = t.layers.add();
-const textLayer = t.layers.add();
-const labelLayer = t.layers.add();
+const guideLayer = t.layers.add(),
+	textLayer = t.layers.add(),
+	labelLayer = t.layers.add();
 
 let font;
 const baselines = ['top', 'center', 'bottom'];
@@ -32,10 +32,10 @@ t.setup(async () => {
 
 labelLayer.draw(() => {
 	t.clear();
-	const left = -Math.floor(t.grid.cols / 2);
-	const top = -Math.floor(t.grid.rows / 2);
-	let y = top + 3;
-	const x = left + 3;
+	const left = -Math.floor(t.grid.cols / 2),
+		top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3,
+		x = left + 3;
 
 	drawText('TEXTMODIFIER.FIGTEXTBASELINE', x, y++, 100, 255, 140);
 	drawText('------------------------------------', x, y++, 80, 100, 150);
@@ -43,12 +43,8 @@ labelLayer.draw(() => {
 	drawText('Aligns text relative to Y origin.', x, y++, 140, 160, 190);
 	drawText('Cycle: top -> center -> bottom.', x, y++, 140, 160, 190);
 	drawText('------------------------------------', x, y++, 80, 100, 150);
-	if (font) {
-		const base = t.figTextBaseline();
-		drawText(`Active baseline: ${base}`, x, y++, 140, 255, 180);
-	} else {
-		drawText('Loading...', x, y++, 255, 180, 100);
-	}
+	if (font) drawText(`Active baseline: ${t.figTextBaseline()}`, x, y++, 140, 255, 180);
+	else drawText('Loading...', x, y++, 255, 180, 100);
 });
 
 guideLayer.draw(() => {
@@ -59,9 +55,9 @@ guideLayer.draw(() => {
 	const index = Math.floor(t.secs / 2.5) % baselines.length;
 	t.figTextBaseline(baselines[index]);
 
-	const left = -Math.floor(t.grid.cols / 2);
-	const right = Math.ceil(t.grid.cols / 2);
-	const base = t.figTextBaseline();
+	const left = -Math.floor(t.grid.cols / 2),
+		right = Math.ceil(t.grid.cols / 2),
+		base = t.figTextBaseline();
 
 	// Draw baseline axis
 	t.push();
@@ -76,13 +72,11 @@ guideLayer.draw(() => {
 	// Draw alignment flow indicators
 	t.push();
 	t.charColor(255, 180, 100);
-	if (base === 'top') {
-		t.print('↓ (Grows Downward)', -9, 5);
-	} else if (base === 'bottom') {
-		t.print('↑ (Grows Upward)', -8, -5);
-	} else {
-		t.print('↕ (Centered)', -6, 5);
-	}
+	t.print(
+		base === 'top' ? '↓ (Grows Downward)' : base === 'bottom' ? '↑ (Grows Upward)' : '↕ (Centered)',
+		-9,
+		base === 'bottom' ? -5 : 5
+	);
 	t.pop();
 });
 

@@ -31,10 +31,10 @@ t.setup(async () => {
 
 labelLayer.draw(() => {
 	t.clear();
-	const left = -Math.floor(t.grid.cols / 2);
-	const top = -Math.floor(t.grid.rows / 2);
-	let y = top + 3;
-	const x = left + 3;
+	const left = -Math.floor(t.grid.cols / 2),
+		top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3,
+		x = left + 3;
 
 	drawText('TEXTMODIFIER.FIGTEXTBOUNDS', x, y++, 100, 255, 140);
 	drawText('------------------------------------', x, y++, 80, 100, 150);
@@ -42,13 +42,8 @@ labelLayer.draw(() => {
 	drawText('Obtains precise text dimensions.', x, y++, 140, 160, 190);
 	drawText('Enables pixel-perfect alignments.', x, y++, 140, 160, 190);
 	drawText('------------------------------------', x, y++, 80, 100, 150);
-	if (font) {
-		const w = bounds.cols;
-		const h = bounds.rows;
-		drawText(`Bounds: ${w}x${h} cells`, x, y++, 140, 255, 180);
-	} else {
-		drawText('Loading...', x, y++, 255, 180, 100);
-	}
+	if (font) drawText(`Bounds: ${bounds.cols}x${bounds.rows} cells`, x, y++, 140, 255, 180);
+	else drawText('Loading...', x, y++, 255, 180, 100);
 });
 
 t.draw(() => {
@@ -56,14 +51,13 @@ t.draw(() => {
 	if (!font) return;
 
 	bounds = t.figTextBounds('BOUNDS');
-	const w = bounds.cols;
-	const h = bounds.rows;
-	const halfW = Math.floor(w / 2);
-	const halfH = Math.floor(h / 2);
-	const time = t.secs * 2.0;
-
-	const cx = (w - 1) / 2 - halfW;
-	const cy = (h - 1) / 2 - halfH;
+	const w = bounds.cols,
+		h = bounds.rows;
+	const halfW = Math.floor(w / 2),
+		halfH = Math.floor(h / 2),
+		time = t.secs * 2.0;
+	const cx = (w - 1) / 2 - halfW,
+		cy = (h - 1) / 2 - halfH;
 
 	t.push();
 	t.translate(cx, cy);
@@ -86,11 +80,10 @@ t.draw(() => {
 	const bColor = Math.round(150 + 105 * Math.sin(time));
 	t.charColor(100, bColor, 255);
 
-	const l = -halfW - 1;
-	const r = -halfW + w;
-	const tRow = -halfH - 1;
-	const bRow = -halfH + h;
-
+	const l = -halfW - 1,
+		r = -halfW + w,
+		tRow = -halfH - 1,
+		bRow = -halfH + h;
 	for (let col = l; col <= r; col++) {
 		t.print('-', col, tRow);
 		t.print('-', col, bRow);

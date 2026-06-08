@@ -9,9 +9,9 @@ const t = textmode.create({
 	fontSize: 8,
 	plugins: [FigletPlugin],
 });
-const guideLayer = t.layers.add();
-const textLayer = t.layers.add();
-const labelLayer = t.layers.add();
+const guideLayer = t.layers.add(),
+	textLayer = t.layers.add(),
+	labelLayer = t.layers.add();
 
 let font;
 const alignments = ['left', 'center', 'right'];
@@ -32,10 +32,10 @@ t.setup(async () => {
 
 labelLayer.draw(() => {
 	t.clear();
-	const left = -Math.floor(t.grid.cols / 2);
-	const top = -Math.floor(t.grid.rows / 2);
-	let y = top + 3;
-	const x = left + 3;
+	const left = -Math.floor(t.grid.cols / 2),
+		top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3,
+		x = left + 3;
 
 	drawText('TEXTMODIFIER.FIGTEXTALIGN', x, y++, 100, 255, 140);
 	drawText('------------------------------------', x, y++, 80, 100, 150);
@@ -43,12 +43,8 @@ labelLayer.draw(() => {
 	drawText('Aligns text relative to X origin.', x, y++, 140, 160, 190);
 	drawText('Cycle: left -> center -> right.', x, y++, 140, 160, 190);
 	drawText('------------------------------------', x, y++, 80, 100, 150);
-	if (font) {
-		const align = t.figTextAlign();
-		drawText(`Active align: ${align}`, x, y++, 140, 255, 180);
-	} else {
-		drawText('Loading...', x, y++, 255, 180, 100);
-	}
+	if (font) drawText(`Active align: ${t.figTextAlign()}`, x, y++, 140, 255, 180);
+	else drawText('Loading...', x, y++, 255, 180, 100);
 });
 
 guideLayer.draw(() => {
@@ -59,9 +55,9 @@ guideLayer.draw(() => {
 	const index = Math.floor(t.secs / 2.5) % alignments.length;
 	t.figTextAlign(alignments[index]);
 
-	const top = -Math.floor(t.grid.rows / 2);
-	const bottom = Math.ceil(t.grid.rows / 2);
-	const align = t.figTextAlign();
+	const top = -Math.floor(t.grid.rows / 2),
+		bottom = Math.ceil(t.grid.rows / 2),
+		align = t.figTextAlign();
 
 	// Draw origin axis
 	t.push();
@@ -76,13 +72,11 @@ guideLayer.draw(() => {
 	// Draw alignment indicator arrow
 	t.push();
 	t.charColor(255, 180, 100);
-	if (align === 'left') {
-		t.print('Origin -->', 0, 5);
-	} else if (align === 'right') {
-		t.print('<-- Origin', -10, 5);
-	} else {
-		t.print('<-- Origin -->', -6, 5);
-	}
+	t.print(
+		align === 'left' ? 'Origin -->' : align === 'right' ? '<-- Origin' : '<-- Origin -->',
+		align === 'left' ? 0 : align === 'right' ? -10 : -6,
+		5
+	);
 	t.pop();
 });
 
