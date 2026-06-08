@@ -1,0 +1,116 @@
+{
+	"version": 1,
+	"description": "FIGlet font support for textmode.js examples manifest",
+	"groups": [
+		{
+			"name": "Textmodifier",
+			"description": "FIGlet runtime methods installed by FigletPlugin on a textmode.js Textmodifier instance",
+			"examples": [
+				{
+					"title": "Textmodifier.loadFigFont",
+					"sourceFile": "examples/Textmodifier/loadFigFont/sketch.js"
+				},
+				{
+					"title": "Textmodifier.parseFigFont",
+					"sourceFile": "examples/Textmodifier/parseFigFont/sketch.js"
+				},
+				{
+					"title": "Textmodifier.figFont",
+					"sourceFile": "examples/Textmodifier/figFont/sketch.js"
+				},
+				{
+					"title": "Textmodifier.figText",
+					"sourceFile": "examples/Textmodifier/figText/sketch.js"
+				},
+				{
+					"title": "Textmodifier.figTextWidth",
+					"sourceFile": "examples/Textmodifier/figTextWidth/sketch.js"
+				},
+				{
+					"title": "Textmodifier.figTextHeight",
+					"sourceFile": "examples/Textmodifier/figTextHeight/sketch.js"
+				},
+				{
+					"title": "Textmodifier.figTextBounds",
+					"sourceFile": "examples/Textmodifier/figTextBounds/sketch.js"
+				},
+				{
+					"title": "Textmodifier.figTextAlign",
+					"sourceFile": "examples/Textmodifier/figTextAlign/sketch.js"
+				},
+				{
+					"title": "Textmodifier.figTextBaseline",
+					"sourceFile": "examples/Textmodifier/figTextBaseline/sketch.js"
+				}
+			]
+		},
+		{
+			"name": "FigletPlugin",
+			"description": "Plugin installation, active font state, measurement helpers, and FIGlet drawing on a textmode sketch",
+			"examples": [
+				{
+					"title": "FigletPlugin.init",
+					"sourceFile": "examples/FigletPlugin/init/sketch.js"
+				}
+			]
+		},
+		{
+			"name": "TextmodeFigFont",
+			"description": "FIGfont loading, metadata inspection, layout defaults, measurement, and rendering demos",
+			"examples": [
+				{
+					"title": "TextmodeFigFont.getCharacter",
+					"sourceFile": "examples/TextmodeFigFont/getCharacter/sketch.js"
+				},
+				{
+					"title": "TextmodeFigFont.planText",
+					"sourceFile": "examples/TextmodeFigFont/planText/sketch.js"
+				},
+				{
+					"title": "TextmodeFigFont.renderText",
+					"sourceFile": "examples/TextmodeFigFont/renderText/sketch.js"
+				},
+				{
+					"title": "TextmodeFigFont.measureText",
+					"sourceFile": "examples/TextmodeFigFont/measureText/sketch.js"
+				},
+				{
+					"title": "TextmodeFigFont.name",
+					"sourceFile": "examples/TextmodeFigFont/name/sketch.js"
+				},
+				{
+					"title": "TextmodeFigFont.header",
+					"sourceFile": "examples/TextmodeFigFont/header/sketch.js"
+				},
+				{
+					"title": "TextmodeFigFont.characters",
+					"sourceFile": "examples/TextmodeFigFont/characters/sketch.js"
+				},
+				{
+					"title": "TextmodeFigFont.hardblank",
+					"sourceFile": "examples/TextmodeFigFont/hardblank/sketch.js"
+				},
+				{
+					"title": "TextmodeFigFont.height",
+					"sourceFile": "examples/TextmodeFigFont/height/sketch.js"
+				},
+				{
+					"title": "TextmodeFigFont.baseline",
+					"sourceFile": "examples/TextmodeFigFont/baseline/sketch.js"
+				},
+				{
+					"title": "TextmodeFigFont.defaultLayout",
+					"sourceFile": "examples/TextmodeFigFont/defaultLayout/sketch.js"
+				},
+				{
+					"title": "TextmodeFigFont.defaultPrintDirection",
+					"sourceFile": "examples/TextmodeFigFont/defaultPrintDirection/sketch.js"
+				},
+				{
+					"title": "TextmodeFigFont.defaultVerticalLayout",
+					"sourceFile": "examples/TextmodeFigFont/defaultVerticalLayout/sketch.js"
+				}
+			]
+		}
+	]
+}
