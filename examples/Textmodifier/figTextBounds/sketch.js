@@ -2,57 +2,24 @@
  * @title Textmodifier.figTextBounds
  * @author codex
  */
+
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
 	fontSize: 8,
-	frameRate: 60,
 	plugins: [FigletPlugin],
 });
+const labelLayer = t.layers.add();
 
-const sampleText = 'FRAME';
-const sampleOptions = {
-	horizontalLayout: 'fitted',
-};
+let font,
+	bounds = { cols: 0, rows: 0 };
 
-let font;
-let bounds;
-
-function writeLabel(text, y, color = [220, 220, 220]) {
-	const startX = -Math.floor(text.length / 2);
-	t.charColor(...color);
-
-	for (let i = 0; i < text.length; i++) {
-		t.push();
-		t.translate(startX + i, y);
-		t.char(text[i]);
-		t.point();
-		t.pop();
-	}
-}
-
-function drawFrame(cols, rows, originX, originY, color = [255, 120, 150]) {
-	t.charColor(...color);
-
-	for (let col = 0; col < cols; col++) {
-		for (const row of [0, rows - 1]) {
-			t.push();
-			t.translate(originX + col, originY + row);
-			t.char(col === 0 || col === cols - 1 ? '+' : '-');
-			t.point();
-			t.pop();
-		}
-	}
-
-	for (let row = 1; row < rows - 1; row++) {
-		for (const col of [0, cols - 1]) {
-			t.push();
-			t.translate(originX + col, originY + row);
-			t.char('|');
-			t.point();
-			t.pop();
-		}
-	}
+function drawText(text, x, y, r = 220, g = 230, b = 255) {
+	t.push();
+	t.printAlign('left', 'top');
+	t.charColor(r, g, b);
+	t.print(text, x, y);
+	t.pop();
 }
 
 t.setup(async () => {
@@ -60,25 +27,84 @@ t.setup(async () => {
 	t.figFont(font);
 	t.figTextAlign('center');
 	t.figTextBaseline('center');
-	bounds = t.figTextBounds(sampleText, sampleOptions);
+});
+
+labelLayer.draw(() => {
+	t.clear();
+	const left = -Math.floor(t.grid.cols / 2);
+	const top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3;
+	const x = left + 3;
+
+	drawText('TEXTMODIFIER.FIGTEXTBOUNDS', x, y++, 100, 255, 140);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	drawText('CONCEPT: TEXT BOUNDING BOX', x, y++, 100, 220, 255);
+	drawText('Obtains precise text dimensions.', x, y++, 140, 160, 190);
+	drawText('Enables pixel-perfect alignments.', x, y++, 140, 160, 190);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	if (font) {
+		const w = bounds.cols;
+		const h = bounds.rows;
+		drawText(`Bounds: ${w}x${h} cells`, x, y++, 140, 255, 180);
+	} else {
+		drawText('Loading...', x, y++, 255, 180, 100);
+	}
 });
 
 t.draw(() => {
 	t.background(8, 10, 18);
+	if (!font) return;
 
-	if (!font || !bounds) {
-		writeLabel('measuring width and height with t.figTextBounds()', 0, [255, 214, 102]);
-		return;
+	bounds = t.figTextBounds('BOUNDS');
+	const w = bounds.cols;
+	const h = bounds.rows;
+	const halfW = Math.floor(w / 2);
+	const halfH = Math.floor(h / 2);
+	const time = t.secs * 2.0;
+
+	const cx = (w - 1) / 2 - halfW;
+	const cy = (h - 1) / 2 - halfH;
+
+	t.push();
+	t.translate(cx, cy);
+	t.char(' ');
+	t.cellColor(15, 20, 30);
+	t.rect(w + 2, h + 2);
+	t.pop();
+
+	// Draw scanline
+	const scanY = -halfH + Math.floor((time * 4) % h);
+	t.push();
+	t.charColor(255, 80, 80, 150);
+	for (let col = -halfW; col < -halfW + w; col++) {
+		t.print('~', col, scanY);
 	}
+	t.pop();
 
-	const originX = -Math.floor(bounds.cols / 2);
-	const originY = -Math.floor(bounds.rows / 2);
+	// Draw simple border using only '-' and '|'
+	t.push();
+	const bColor = Math.round(150 + 105 * Math.sin(time));
+	t.charColor(100, bColor, 255);
 
-	writeLabel('Textmodifier.figTextBounds', -12, [255, 214, 102]);
-	drawFrame(bounds.cols, bounds.rows, originX, originY);
-	t.charColor(124, 214, 255);
-	t.figText(sampleText, 0, 0, sampleOptions);
-	writeLabel(`bounds: ${bounds.cols} cols × ${bounds.rows} rows`, 10, [220, 230, 255]);
+	const l = -halfW - 1;
+	const r = -halfW + w;
+	const tRow = -halfH - 1;
+	const bRow = -halfH + h;
+
+	for (let col = l; col <= r; col++) {
+		t.print('-', col, tRow);
+		t.print('-', col, bRow);
+	}
+	for (let row = tRow + 1; row < bRow; row++) {
+		t.print('|', l, row);
+		t.print('|', r, row);
+	}
+	t.pop();
+
+	t.push();
+	t.charColor(255, 255, 255);
+	t.figText('BOUNDS', 0, 0);
+	t.pop();
 });
 
 t.windowResized(() => {

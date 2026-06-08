@@ -2,39 +2,26 @@
  * @title Textmodifier.figTextAlign
  * @author codex
  */
+
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
 	fontSize: 8,
-	frameRate: 60,
 	plugins: [FigletPlugin],
 });
+const guideLayer = t.layers.add();
+const textLayer = t.layers.add();
+const labelLayer = t.layers.add();
 
 let font;
+const alignments = ['left', 'center', 'right'];
 
-function writeLabel(text, y, color = [220, 220, 220]) {
-	const startX = -Math.floor(text.length / 2);
-	t.charColor(...color);
-
-	for (let i = 0; i < text.length; i++) {
-		t.push();
-		t.translate(startX + i, y);
-		t.char(text[i]);
-		t.point();
-		t.pop();
-	}
-}
-
-function drawVerticalGuide(col, top, bottom, color = [64, 72, 96]) {
-	t.charColor(...color);
-
-	for (let row = top; row <= bottom; row++) {
-		t.push();
-		t.translate(col, row);
-		t.char('|');
-		t.point();
-		t.pop();
-	}
+function drawText(text, x, y, r = 220, g = 230, b = 255) {
+	t.push();
+	t.printAlign('left', 'top');
+	t.charColor(r, g, b);
+	t.print(text, x, y);
+	t.pop();
 }
 
 t.setup(async () => {
@@ -43,42 +30,73 @@ t.setup(async () => {
 	t.figTextBaseline('center');
 });
 
-t.draw(() => {
-	t.background(8, 10, 16);
+labelLayer.draw(() => {
+	t.clear();
+	const left = -Math.floor(t.grid.cols / 2);
+	const top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3;
+	const x = left + 3;
 
-	if (!font || !t.grid) {
-		writeLabel('changing placement with t.figTextAlign()', 0, [255, 214, 102]);
-		return;
+	drawText('TEXTMODIFIER.FIGTEXTALIGN', x, y++, 100, 255, 140);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	drawText('CONCEPT: HORIZONTAL ALIGNMENT', x, y++, 100, 220, 255);
+	drawText('Aligns text relative to X origin.', x, y++, 140, 160, 190);
+	drawText('Cycle: left -> center -> right.', x, y++, 140, 160, 190);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	if (font) {
+		const align = t.figTextAlign();
+		drawText(`Active align: ${align}`, x, y++, 140, 255, 180);
+	} else {
+		drawText('Loading...', x, y++, 255, 180, 100);
 	}
+});
 
-	const left = -t.grid.cols / 2 + 5;
-	const center = 0;
-	const right = t.grid.cols / 2 - 5;
+guideLayer.draw(() => {
+	t.clear();
+	if (!font) return;
 
-	writeLabel('Textmodifier.figTextAlign', -13, [255, 214, 102]);
-	drawVerticalGuide(left, -10, 12);
-	drawVerticalGuide(center, -10, 12);
-	drawVerticalGuide(right, -10, 12);
+	// Cycle alignment every 2.5 seconds
+	const index = Math.floor(t.secs / 2.5) % alignments.length;
+	t.figTextAlign(alignments[index]);
 
-	t.charColor(255, 120, 150);
-	t.figTextAlign('left');
-	t.figText('LEFT', left, -6, {
-		horizontalLayout: 'fitted',
+	const top = -Math.floor(t.grid.rows / 2);
+	const bottom = Math.ceil(t.grid.rows / 2);
+	const align = t.figTextAlign();
+
+	// Draw origin axis
+	t.push();
+	t.charColor(50, 100, 150);
+	for (let y = top; y < bottom; y++) {
+		t.print('|', 0, y);
+	}
+	t.charColor(100, 180, 255);
+	t.print('X = 0 (Origin)', 2, 8);
+	t.pop();
+
+	// Draw alignment indicator arrow
+	t.push();
+	t.charColor(255, 180, 100);
+	if (align === 'left') {
+		t.print('Origin -->', 0, 5);
+	} else if (align === 'right') {
+		t.print('<-- Origin', -10, 5);
+	} else {
+		t.print('<-- Origin -->', -6, 5);
+	}
+	t.pop();
+});
+
+textLayer.draw(() => {
+	t.clear();
+	if (!font) return;
+
+	const time = t.secs * 1.5;
+	t.figText('ALIGN', 0, 0, {
+		charColor: (cell) => {
+			const wave = 0.5 + 0.5 * Math.sin(time + cell.col * 0.1);
+			return [Math.round(100 + 155 * wave), 255, Math.round(200 + 55 * (1.0 - wave))];
+		},
 	});
-
-	t.charColor(255, 214, 102);
-	t.figTextAlign('center');
-	t.figText('CENTER', center, 1, {
-		horizontalLayout: 'fitted',
-	});
-
-	t.charColor(124, 214, 255);
-	t.figTextAlign('right');
-	t.figText('RIGHT', right, 8, {
-		horizontalLayout: 'fitted',
-	});
-
-	writeLabel(`current align: ${t.figTextAlign()}`, 14, [220, 230, 255]);
 });
 
 t.windowResized(() => {
