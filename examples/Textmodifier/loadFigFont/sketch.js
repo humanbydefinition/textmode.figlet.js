@@ -1,6 +1,5 @@
 /**
  * @title Textmodifier.loadFigFont
- * @author codex
  */
 
 const t = textmode.create({

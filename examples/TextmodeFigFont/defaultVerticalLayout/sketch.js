@@ -1,6 +1,5 @@
 /**
  * @title TextmodeFigFont.defaultVerticalLayout
- * @author codex
  */
 
 const t = textmode.create({

@@ -1,6 +1,5 @@
 /**
  * @title Textmodifier.figTextBounds
- * @author codex
  */
 
 const t = textmode.create({
@@ -42,12 +41,8 @@ labelLayer.draw(() => {
 	drawText('Obtains precise text dimensions.', x, y++, 140, 160, 190);
 	drawText('Enables pixel-perfect alignments.', x, y++, 140, 160, 190);
 	drawText('------------------------------------', x, y++, 80, 100, 150);
-	if (font) {
-		const str = 'Bounds: ' + bounds.cols + 'x' + bounds.rows + ' cells';
-		drawText(str, x, y++, 140, 255, 180);
-	} else {
-		drawText('Loading...', x, y++, 255, 180, 100);
-	}
+	if (font) drawText('Bounds: ' + bounds.cols + 'x' + bounds.rows + ' cells', x, y++, 140, 255, 180);
+	else drawText('Loading...', x, y++, 255, 180, 100);
 });
 
 t.draw(() => {
@@ -55,43 +50,33 @@ t.draw(() => {
 	if (!font) return;
 
 	bounds = t.figTextBounds('BOUNDS');
-	const w = bounds.cols;
-	const h = bounds.rows;
-	const halfW = Math.floor(w / 2);
-	const halfH = Math.floor(h / 2);
-	const time = t.secs * 2.0;
+	const w = bounds.cols,
+		h = bounds.rows;
+	const halfW = w >> 1,
+		halfH = h >> 1,
+		time = t.secs * 2;
 
 	t.push();
 	t.translate((w - 1) / 2 - halfW, (h - 1) / 2 - halfH);
-	t.char(' ');
-	t.cellColor(15, 20, 30);
-	t.rect(w + 2, h + 2);
+	(t.char(' '), t.cellColor(15, 20, 30), t.rect(w + 2, h + 2));
 	t.pop();
 
 	// Draw scanline
-	const scanY = -halfH + Math.floor((time * 4) % h);
 	t.push();
 	t.charColor(255, 80, 80, 150);
-	for (let col = -halfW; col < -halfW + w; col++) {
-		t.print('~', col, scanY);
-	}
+	const scanY = -halfH + Math.floor((time * 4) % h);
+	for (let col = -halfW; col < -halfW + w; col++) t.print('~', col, scanY);
 	t.pop();
 
 	// Draw simple border using only '-' and '|'
 	t.push();
 	t.charColor(100, Math.round(150 + 105 * Math.sin(time)), 255);
-	const l = -halfW - 1;
-	const r = -halfW + w;
-	const tRow = -halfH - 1;
-	const bRow = -halfH + h;
-	for (let col = l; col <= r; col++) {
-		t.print('-', col, tRow);
-		t.print('-', col, bRow);
-	}
-	for (let row = tRow + 1; row < bRow; row++) {
-		t.print('|', l, row);
-		t.print('|', r, row);
-	}
+	const l = -halfW - 1,
+		r = -halfW + w,
+		tRow = -halfH - 1,
+		bRow = -halfH + h;
+	for (let c = l; c <= r; c++) (t.print('-', c, tRow), t.print('-', c, bRow));
+	for (let y = tRow + 1; y < bRow; y++) (t.print('|', l, y), t.print('|', r, y));
 	t.pop();
 
 	t.push();

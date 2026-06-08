@@ -1,6 +1,5 @@
 /**
  * @title TextmodeFigFont.planText
- * @author codex
  */
 
 const t = textmode.create({

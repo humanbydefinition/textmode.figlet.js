@@ -1,6 +1,5 @@
 /**
  * @title Textmodifier.figTextAlign
- * @author codex
  */
 
 const t = textmode.create({

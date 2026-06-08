@@ -1,6 +1,5 @@
 /**
  * @title FigletPlugin.init
- * @author codex
  */
 
 const t = textmode.create({

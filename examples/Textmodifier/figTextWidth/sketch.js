@@ -1,6 +1,5 @@
 /**
  * @title Textmodifier.figTextWidth
- * @author codex
  */
 
 const t = textmode.create({
