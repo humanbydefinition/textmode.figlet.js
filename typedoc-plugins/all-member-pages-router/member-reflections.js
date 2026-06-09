@@ -4,9 +4,9 @@ import { ReflectionKind } from 'typedoc';
 
 import {
 	ALWAYS_OWN_PAGE_KIND_NAMES,
+	MEMBER_PAGE_OWNER_KINDS,
 	MAX_INLINE_SANDPACK_EXAMPLES,
 	MEMBER_PAGE_KINDS,
-	METHOD_PAGE_OWNER_KINDS,
 } from './constants.js';
 
 /**
@@ -17,18 +17,20 @@ import {
  */
 
 /**
- * @param {import('typedoc').Reflection} reflection
- * @returns {number}
+ * @param {import('typedoc').Reflection | undefined} reflection
+ * @returns {string[]}
  */
-function countOwnSandpackExamples(reflection) {
-	return (reflection.comment?.blockTags || []).filter((tag) => {
+function getOwnSandpackExamples(reflection) {
+	return (reflection?.comment?.blockTags || []).flatMap((tag) => {
 		if (tag.tag !== '@example') {
-			return false;
+			return [];
 		}
 
 		const content = (tag.content || []).map((part) => part.text).join('');
-		return /```(?:js|javascript|jsx|ts|typescript|tsx)\b/i.test(content);
-	}).length;
+		return /```(?:js|javascript|jsx|ts|typescript|tsx)\b/i.test(content) && /@title\b/.test(content)
+			? [content]
+			: [];
+	});
 }
 
 /**
@@ -36,55 +38,95 @@ function countOwnSandpackExamples(reflection) {
  * @returns {number}
  */
 function countReflectionSandpackExamples(reflection) {
-	const signatureExamples = (reflection.signatures || []).reduce((count, signature) => {
-		return count + countOwnSandpackExamples(signature);
-	}, 0);
+	const examples = new Set([
+		...getOwnSandpackExamples(reflection),
+		...(reflection.signatures || []).flatMap((signature) => getOwnSandpackExamples(signature)),
+		...getOwnSandpackExamples(reflection.getSignature),
+		...getOwnSandpackExamples(reflection.setSignature),
+	]);
 
-	return countOwnSandpackExamples(reflection) + signatureExamples;
+	return examples.size;
 }
 
 /**
  * @param {import('typedoc').Reflection} owner
  * @returns {number}
  */
-function countInlineMethodSandpackExamples(owner) {
+function countInlineMemberSandpackExamples(owner) {
 	return (owner.children || [])
-		.filter((child) => child.kind === ReflectionKind.Method)
-		.reduce((count, method) => count + countReflectionSandpackExamples(method), 0);
+		.filter((child) => isSandpackThresholdMemberReflection(child))
+		.reduce((count, member) => count + countReflectionSandpackExamples(member), 0);
 }
 
 /**
- * Check whether direct methods should become focused pages for this owner.
+ * @param {import('typedoc').Reflection} reflection
+ * @returns {boolean}
+ */
+function isPropertyLikeReflection(reflection) {
+	return reflection.kind === ReflectionKind.Property || reflection.kind === ReflectionKind.Accessor;
+}
+
+/**
+ * @param {import('typedoc').Reflection} reflection
+ * @returns {boolean}
+ */
+function isSandpackThresholdMemberReflection(reflection) {
+	return (
+		(reflection.kind === ReflectionKind.Method || isPropertyLikeReflection(reflection)) &&
+		countReflectionSandpackExamples(reflection) > 0
+	);
+}
+
+/**
+ * Check whether direct members should become focused pages for this owner.
  *
  * @param {import('typedoc').Reflection} owner
  * @returns {boolean}
  */
-function shouldRenderMethodMemberPages(owner) {
-	if (!METHOD_PAGE_OWNER_KINDS.has(owner.kind)) {
+function shouldRenderMemberPages(owner) {
+	if (!MEMBER_PAGE_OWNER_KINDS.has(owner.kind)) {
 		return false;
 	}
 
-	const inlineExampleCount = countReflectionSandpackExamples(owner) + countInlineMethodSandpackExamples(owner);
+	const inlineExampleCount = countReflectionSandpackExamples(owner) + countInlineMemberSandpackExamples(owner);
 	return inlineExampleCount > MAX_INLINE_SANDPACK_EXAMPLES;
 }
 
 /**
- * Check whether a reflection is a direct method that should become a focused
- * page.
+ * @param {import('typedoc').Reflection | undefined} reflection
+ * @returns {boolean}
+ */
+function isDirectManagedMemberReflection(reflection) {
+	return Boolean(
+		reflection?.parent &&
+		MEMBER_PAGE_OWNER_KINDS.has(reflection.parent.kind) &&
+		MEMBER_PAGE_KINDS.has(reflection.kind)
+	);
+}
+
+/**
+ * Check whether a reflection is a direct method or example-bearing property
+ * that should become a focused page.
  *
  * @param {import('typedoc').Reflection | undefined} reflection
  * @returns {boolean}
  */
 export function isDirectMemberPageReflection(reflection) {
-	return Boolean(
-		reflection?.parent && MEMBER_PAGE_KINDS.has(reflection.kind) && shouldRenderMethodMemberPages(reflection.parent)
-	);
+	if (!isDirectManagedMemberReflection(reflection) || !shouldRenderMemberPages(reflection.parent)) {
+		return false;
+	}
+
+	if (reflection.kind === ReflectionKind.Method) {
+		return true;
+	}
+
+	return isSandpackThresholdMemberReflection(reflection);
 }
 
 /**
  * Preserve the markdown MemberRouter own-page policy while extending it to
- * direct methods when the owner page would otherwise render too many Sandpack
- * examples.
+ * direct methods and example-bearing properties when the owner page would
+ * otherwise render too many Sandpack examples.
  *
  * @param {import('typedoc').Reflection} reflection
  * @param {OwnPagePolicyRouter} router
@@ -93,6 +135,10 @@ export function isDirectMemberPageReflection(reflection) {
 export function shouldRenderOwnPage(reflection, router) {
 	if (isDirectMemberPageReflection(reflection)) {
 		return true;
+	}
+
+	if (isDirectManagedMemberReflection(reflection)) {
+		return false;
 	}
 
 	return [...ALWAYS_OWN_PAGE_KIND_NAMES, ...router.membersWithOwnFile].includes(

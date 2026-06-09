@@ -15,7 +15,7 @@ import { MEMBER_DIRECTORIES } from './constants.js';
  */
 
 /**
- * Get the directory name for a direct method member kind.
+ * Get the directory name for a direct Sandpack member kind.
  *
  * @param {import('typedoc').ReflectionKind} kind
  * @returns {string | undefined}
@@ -25,7 +25,7 @@ export function getMemberDirectoryName(kind) {
 }
 
 /**
- * Build the directory path for a direct method member page.
+ * Build the directory path for a direct Sandpack member page.
  *
  * @param {MemberDirectoryRouter} router
  * @param {import('typedoc').Reflection} reflection
@@ -37,7 +37,7 @@ export function getDirectMemberDirectory(router, reflection) {
 }
 
 /**
- * Build a reflection filename for a direct method page.
+ * Build a reflection filename for a direct Sandpack member page.
  *
  * @param {ReflectionAliasRouter} router
  * @param {import('typedoc').Reflection} reflection
