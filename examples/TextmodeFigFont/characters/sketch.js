@@ -1,69 +1,79 @@
 /**
  * @title TextmodeFigFont.characters
- * @author codex
  */
+
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
 	fontSize: 8,
-	frameRate: 60,
 	plugins: [FigletPlugin],
 });
 
+const labelLayer = t.layers.add();
+
 let font;
-let rendered;
+let keysList = [];
 
-function writeLabel(text, y, color = [220, 220, 220]) {
-	const startX = -Math.floor(text.length / 2);
-	t.charColor(...color);
-
-	for (let i = 0; i < text.length; i++) {
-		t.push();
-		t.translate(startX + i, y);
-		t.char(text[i]);
-		t.point();
-		t.pop();
-	}
-}
-
-function drawGrid(grid, originX, originY, color = [124, 214, 255]) {
-	t.charColor(...color);
-
-	for (let row = 0; row < grid.length; row++) {
-		for (let col = 0; col < grid[row].length; col++) {
-			const cell = grid[row][col];
-			if (cell === ' ') {
-				continue;
-			}
-
-			t.push();
-			t.translate(originX + col, originY + row);
-			t.char(cell);
-			t.point();
-			t.pop();
-		}
-	}
+function drawText(text, x, y, r = 220, g = 230, b = 255) {
+	t.push();
+	t.printAlign('left', 'top');
+	t.charColor(r, g, b);
+	t.print(text, x, y);
+	t.pop();
 }
 
 t.setup(async () => {
 	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
-	rendered = font.renderText('ABC');
+	t.figFont(font);
+	t.figTextAlign('center');
+	t.figTextBaseline('center');
+	keysList = Array.from(font.characters.keys()).filter((code) => code >= 33 && code <= 126);
+});
+
+labelLayer.draw(() => {
+	t.clear();
+	const left = -Math.floor(t.grid.cols / 2);
+	const top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3;
+	const x = left + 3;
+
+	drawText('TEXTMODEFIGFONT.CHARACTERS', x, y++, 100, 255, 140);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	drawText('CONCEPT: INSPECTING ALL CHARACTERS', x, y++, 100, 220, 255);
+	drawText('Accesses map of all loaded glyphs.', x, y++, 140, 160, 190);
+	drawText('Shows printable ASCII codes (33-126).', x, y++, 140, 160, 190);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	if (font) {
+		drawText(`Glyphs loaded: ${font.characters.size}`, x, y++, 140, 255, 180);
+	} else {
+		drawText('Loading characters map...', x, y++, 255, 180, 100);
+	}
 });
 
 t.draw(() => {
-	t.background(8, 10, 16);
+	t.background(10, 10, 14);
 
-	if (!font || !rendered) {
-		writeLabel('loading character map...', 0, [255, 214, 102]);
-		return;
+	if (!font || keysList.length === 0) return;
+
+	t.figText('CHARS', 0, -6);
+
+	t.push();
+	t.printAlign('center', 'center');
+	const time = t.secs * 1.2;
+	const offset = Math.floor(time * 2) % keysList.length;
+
+	// Draw a scrolling waterfall of loaded character codes
+	for (let i = 0; i < 8; i++) {
+		const idx = (offset + i) % keysList.length;
+		const code = keysList[idx];
+		const charStr = String.fromCharCode(code);
+
+		const wave = 0.5 + 0.5 * Math.sin(time + i * 0.5);
+		t.charColor(Math.round(100 + 155 * wave), 255, Math.round(150 + 105 * (1.0 - wave)));
+
+		t.print(`code ${code} -> glyph '${charStr}'`, 0, -1 + i * 2);
 	}
-
-	const previewCodes = [32, 33, 34, 35, 36].filter((code) => font.characters.has(code)).join(', ');
-
-	writeLabel('TextmodeFigFont.characters', -12, [255, 214, 102]);
-	drawGrid(rendered.grid, -Math.floor(rendered.cols / 2), -6);
-	writeLabel(`font.characters.size -> ${font.characters.size}`, 8, [220, 230, 255]);
-	writeLabel(`first codes: ${previewCodes}`, 11, [160, 180, 220]);
+	t.pop();
 });
 
 t.windowResized(() => {

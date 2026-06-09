@@ -1,62 +1,89 @@
 /**
  * @title TextmodeFigFont.defaultLayout
- * @author codex
  */
+
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
 	fontSize: 8,
-	frameRate: 60,
 	plugins: [FigletPlugin],
 });
 
+const labelLayer = t.layers.add();
 let font;
-let plan;
+let currentMode = 'default';
 
-function writeLabel(text, y, color = [220, 220, 220]) {
-	const startX = -Math.floor(text.length / 2);
-	t.charColor(...color);
-
-	for (let i = 0; i < text.length; i++) {
-		t.push();
-		t.translate(startX + i, y);
-		t.char(text[i]);
-		t.point();
-		t.pop();
-	}
-}
-
-function drawPlan(renderPlan, originX, originY, color = [124, 214, 255]) {
-	t.charColor(...color);
-
-	for (const cell of renderPlan.cells) {
-		t.push();
-		t.translate(originX + cell.col, originY + cell.row);
-		t.char(cell.char);
-		t.point();
-		t.pop();
-	}
+function drawText(text, x, y, r = 220, g = 230, b = 255) {
+	t.push();
+	t.printAlign('left', 'top');
+	t.charColor(r, g, b);
+	t.print(text, x, y);
+	t.pop();
 }
 
 t.setup(async () => {
 	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
-	plan = font.planText('LAYOUT', {
-		horizontalLayout: font.defaultLayout,
-	});
+	t.figFont(font);
+});
+
+labelLayer.draw(() => {
+	t.clear();
+	const left = -Math.floor(t.grid.cols / 2);
+	const top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3;
+	const x = left + 3;
+
+	drawText('TEXTMODEFIGFONT.DEFAULTLAYOUT', x, y++, 100, 255, 140);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	drawText('CONCEPT: DEFAULT LAYOUT RULES', x, y++, 100, 220, 255);
+	drawText('Controls horizontal kerning/smush.', x, y++, 140, 160, 190);
+	drawText('Combines glyph edges into compact forms.', x, y++, 140, 160, 190);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	if (font) {
+		const m = currentMode;
+		drawText(`Default layout: ${font.defaultLayout}`, x, y++, 140, 255, 180);
+		drawText(`Current layout: ${m}`, x, y++, 100, 225, 255);
+	} else {
+		drawText('Loading...', x, y++, 255, 180, 100);
+	}
 });
 
 t.draw(() => {
-	t.background(8, 10, 18);
+	t.background(10, 12, 18);
 
-	if (!font || !plan) {
-		writeLabel('loading default layout...', 0, [255, 214, 102]);
-		return;
+	if (!font) return;
+
+	const modes = ['full', 'fitted', 'smushed'];
+	const idx = Math.floor(t.secs / 3.0) % modes.length;
+	currentMode = modes[idx];
+
+	const plan = font.planText('LAYOUT', { horizontalLayout: currentMode });
+	if (!plan) return;
+
+	const startX = -Math.floor(plan.cols / 2);
+	const startY = -Math.floor(plan.rows / 2);
+	const time = t.secs * 1.5;
+
+	// Draw characters
+	for (const cell of plan.cells) {
+		t.push();
+		t.translate(startX + cell.col, startY + cell.row);
+		const wave = 0.5 + 0.5 * Math.sin(time + cell.col * 0.1);
+		t.charColor(Math.round(130 + 125 * wave), 255, Math.round(200 + 55 * (1.0 - wave)));
+		t.char(cell.char);
+		t.point();
+		t.pop();
 	}
 
-	writeLabel('TextmodeFigFont.defaultLayout', -12, [255, 214, 102]);
-	drawPlan(plan, -Math.floor(plan.cols / 2), -6);
-	writeLabel(`font.defaultLayout -> ${font.defaultLayout}`, 8, [220, 230, 255]);
-	writeLabel(`planned width: ${plan.cols} cols`, 11, [160, 180, 220]);
+	// Draw bounds
+	t.push();
+	t.charColor(255, 180, 100);
+	t.print('[', startX - 2, 0);
+	t.print(']', startX + plan.cols + 1, 0);
+	t.printAlign('center', 'top');
+	const label = `${plan.cols} columns`;
+	t.print(label, 0, startY + plan.rows + 2);
+	t.pop();
 });
 
 t.windowResized(() => {

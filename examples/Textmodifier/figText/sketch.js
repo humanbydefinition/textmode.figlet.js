@@ -1,33 +1,24 @@
 /**
  * @title Textmodifier.figText
- * @author codex
  */
+
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
 	fontSize: 8,
-	frameRate: 60,
 	plugins: [FigletPlugin],
 });
 
+const labelLayer = t.layers.add();
+
 let font;
 
-function writeLabel(text, y, color = [220, 220, 220]) {
-	const startX = -Math.floor(text.length / 2);
-	t.charColor(...color);
-
-	for (let i = 0; i < text.length; i++) {
-		t.push();
-		t.translate(startX + i, y);
-		t.char(text[i]);
-		t.point();
-		t.pop();
-	}
-}
-
-function getWaveColor(phase, seed, from, to) {
-	const wave = 0.5 + 0.5 * Math.sin(phase + seed);
-	return from.map((start, index) => Math.round(start + (to[index] - start) * wave));
+function drawText(text, x, y, r = 220, g = 230, b = 255) {
+	t.push();
+	t.printAlign('left', 'top');
+	t.charColor(r, g, b);
+	t.print(text, x, y);
+	t.pop();
 }
 
 t.setup(async () => {
@@ -37,23 +28,42 @@ t.setup(async () => {
 	t.figTextBaseline('center');
 });
 
-t.draw(() => {
-	t.background(8, 10, 16);
+labelLayer.draw(() => {
+	t.clear();
+	const left = -Math.floor(t.grid.cols / 2);
+	const top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3;
+	const x = left + 3;
 
-	if (!font) {
-		writeLabel('drawing FIGlet cells with t.figText()', 0, [255, 214, 102]);
-		return;
+	drawText('TEXTMODIFIER.FIGTEXT', x, y++, 100, 255, 140);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	drawText('CONCEPT: RENDERING FIGLET TEXT', x, y++, 100, 220, 255);
+	drawText('Draws stylized text using active font.', x, y++, 140, 160, 190);
+	drawText('Supports dynamic colors per cell.', x, y++, 140, 160, 190);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	if (font) {
+		drawText('Orbiting "TEXT" layout animation', x, y++, 140, 255, 180);
+	} else {
+		drawText('Loading font...', x, y++, 255, 180, 100);
 	}
+});
 
-	const phase = Date.now() * 0.0035;
+t.draw(() => {
+	t.background(14, 10, 16);
 
-	writeLabel('Textmodifier.figText', -12, [255, 214, 102]);
-	t.figText('DRAW', 0, -1, {
+	if (!font) return;
+
+	const time = t.secs * 1.5;
+	const ox = Math.floor(Math.cos(time) * 6);
+	const oy = Math.floor(Math.sin(time) * 3);
+
+	t.figText('TEXT', ox, oy, {
 		horizontalLayout: 'fitted',
-		charColor: (cell) => getWaveColor(phase, cell.col * 0.55 + cell.row * 0.35, [124, 214, 255], [255, 214, 102]),
-		cellColor: (cell) => (cell.subCol === 0 ? [24, 28, 52, 255] : undefined),
+		charColor: (cell) => {
+			const wave = 0.5 + 0.5 * Math.sin(time * 2.0 + cell.col * 0.1);
+			return [Math.round(255 * wave), Math.round(180 * (1.0 - wave)), 255];
+		},
 	});
-	writeLabel('per-cell color callbacks can style the rendered glyph plan', 10, [220, 230, 255]);
 });
 
 t.windowResized(() => {

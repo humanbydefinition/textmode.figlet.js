@@ -1,70 +1,89 @@
 /**
  * @title Textmodifier.parseFigFont
- * @author codex
  */
+
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
 	fontSize: 8,
-	frameRate: 60,
 	plugins: [FigletPlugin],
 });
+const labelLayer = t.layers.add();
 
-let font;
-let rendered;
+let font, bounds;
 
-function writeLabel(text, y, color = [220, 220, 220]) {
-	const startX = -Math.floor(text.length / 2);
-	t.charColor(...color);
-
-	for (let i = 0; i < text.length; i++) {
-		t.push();
-		t.translate(startX + i, y);
-		t.char(text[i]);
-		t.point();
-		t.pop();
-	}
-}
-
-function drawGrid(grid, originX, originY, color = [255, 120, 150]) {
-	t.charColor(...color);
-
-	for (let row = 0; row < grid.length; row++) {
-		for (let col = 0; col < grid[row].length; col++) {
-			const cell = grid[row][col];
-			if (cell === ' ') {
-				continue;
-			}
-
-			t.push();
-			t.translate(originX + col, originY + row);
-			t.char(cell);
-			t.point();
-			t.pop();
-		}
-	}
+function drawText(text, x, y, r = 220, g = 230, b = 255) {
+	t.push();
+	t.printAlign('left', 'top');
+	t.charColor(r, g, b);
+	t.print(text, x, y);
+	t.pop();
 }
 
 t.setup(async () => {
 	const response = await fetch('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
-	const data = await response.text();
-	font = t.parseFigFont('Bulbhead copy', data);
+	const rawText = await response.text();
+	font = t.parseFigFont('Bulbhead', rawText);
 	t.figFont(font);
-	rendered = font.renderText('PARSE');
+	t.figTextAlign('center');
+	t.figTextBaseline('center');
+	bounds = t.figTextBounds('PARSE', { horizontalLayout: 'fitted' });
+});
+
+labelLayer.draw(() => {
+	t.clear();
+	const left = -Math.floor(t.grid.cols / 2);
+	const top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3;
+	const x = left + 3;
+
+	drawText('TEXTMODIFIER.PARSEFIGFONT', x, y++, 100, 255, 140);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	drawText('CONCEPT: PARSING RAW FONT STRINGS', x, y++, 100, 220, 255);
+	drawText('Parses string data into a FIGfont.', x, y++, 140, 160, 190);
+	drawText('Enables inline/local font definition.', x, y++, 140, 160, 190);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	if (font) {
+		const name = font.name;
+		drawText(`Parsed name: ${name}`, x, y++, 140, 255, 180);
+	} else {
+		drawText('Parsing...', x, y++, 255, 180, 100);
+	}
 });
 
 t.draw(() => {
 	t.background(8, 10, 18);
+	const time = t.secs;
+	const cols = t.grid.cols;
+	const rows = t.grid.rows;
+	const left = -Math.floor(cols / 2);
+	const top = -Math.floor(rows / 2);
 
-	if (!font || !rendered) {
-		writeLabel('parsing raw FIGfont text with t.parseFigFont()', 0, [255, 214, 102]);
-		return;
-	}
+	if (!font || !bounds) return;
 
-	writeLabel('Textmodifier.parseFigFont', -10, [255, 214, 102]);
-	drawGrid(rendered.grid, -Math.floor(rendered.cols / 2), -4);
-	writeLabel(`parsed: ${font.name}`, 7, [220, 230, 255]);
-	writeLabel(`characters: ${font.characters.size}`, 10, [160, 180, 220]);
+	const w = bounds.cols;
+	const h = bounds.rows;
+	const halfW = Math.floor(w / 2);
+	const halfH = Math.floor(h / 2);
+
+	const cx = (w - 1) / 2 - halfW;
+	const cy = (h - 1) / 2 - halfH;
+
+	t.push();
+	t.translate(cx, cy);
+	t.char(' ');
+	t.cellColor(10, 10, 12);
+	t.rect(w + 4, h + 2);
+	t.pop();
+
+	const timeFig = t.secs * 1.8;
+	t.figText('PARSE', 0, 0, {
+		horizontalLayout: 'fitted',
+		charColor: (cell) => {
+			const wave = 0.5 + 0.5 * Math.sin(timeFig + cell.col * 0.25);
+			return [Math.round(100 + 155 * wave), 255, Math.round(120 + 135 * (1.0 - wave))];
+		},
+	});
 });
 
 t.windowResized(() => {

@@ -1,48 +1,25 @@
 /**
  * @title FigletPlugin.init
- * @author codex
  */
+
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
 	fontSize: 8,
-	frameRate: 60,
 	plugins: [FigletPlugin],
 });
 
-const lines = {
-	primary: 'PLUGIN',
-	secondary: 'READY',
-};
-
-const primaryLayoutOptions = {
-	horizontalLayout: 'fitted',
-};
-
-const secondaryLayoutOptions = {
-	horizontalLayout: 'fitted',
-};
+const labelLayer = t.layers.add();
 
 let font;
-let primaryBounds;
-let secondaryBounds;
+let bounds;
 
-function writeLabel(text, y, color = [220, 220, 220]) {
-	const startX = -Math.floor(text.length / 2);
-	t.charColor(...color);
-
-	for (let i = 0; i < text.length; i++) {
-		t.push();
-		t.translate(startX + i, y);
-		t.char(text[i]);
-		t.point();
-		t.pop();
-	}
-}
-
-function getWaveColor(phase, seed, from, to) {
-	const wave = 0.5 + 0.5 * Math.sin(phase + seed);
-	return from.map((start, index) => Math.round(start + (to[index] - start) * wave));
+function drawText(text, x, y, r = 220, g = 230, b = 255) {
+	t.push();
+	t.printAlign('left', 'top');
+	t.charColor(r, g, b);
+	t.print(text, x, y);
+	t.pop();
 }
 
 t.setup(async () => {
@@ -50,44 +27,44 @@ t.setup(async () => {
 	t.figFont(font);
 	t.figTextAlign('center');
 	t.figTextBaseline('center');
+	bounds = t.figTextBounds('READY', { horizontalLayout: 'fitted' });
+});
 
-	primaryBounds = t.figTextBounds(lines.primary, primaryLayoutOptions);
-	secondaryBounds = t.figTextBounds(lines.secondary, secondaryLayoutOptions);
+labelLayer.draw(() => {
+	t.clear();
+	const left = -Math.floor(t.grid.cols / 2);
+	const top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3;
+	const x = left + 3;
+
+	drawText('FIGLETPLUGIN.INIT', x, y++, 100, 255, 140);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	drawText('CONCEPT: PLUGIN INITIALIZATION', x, y++, 100, 220, 255);
+	drawText('Installs FIGlet drawing features.', x, y++, 140, 160, 190);
+	drawText('Enables loadFigFont and figText.', x, y++, 140, 160, 190);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	if (font) {
+		drawText(`Font loaded: ${font.name}`, x, y++, 140, 255, 180);
+	} else {
+		drawText('Loading font...', x, y++, 255, 180, 100);
+	}
 });
 
 t.draw(() => {
-	t.background(8, 10, 16);
+	t.background(10, 12, 18);
 
-	if (!font || !primaryBounds || !secondaryBounds) {
-		writeLabel('installing FigletPlugin + loading a FIGfont...', 0, [255, 214, 102]);
-		return;
-	}
+	if (!font || !bounds) return;
 
-	const phase = Date.now() * 0.0035;
+	const time = t.secs * 2.0;
+	const yOffset = Math.floor(Math.sin(time) * 4);
 
-	writeLabel('FigletPlugin installs FIGlet helpers onto this sketch', -14, [255, 214, 102]);
-
-	t.figText(lines.primary, 0, -4, {
-		...primaryLayoutOptions,
-		charColor: (cell) => getWaveColor(phase, cell.col * 0.65 + cell.row * 0.4, [124, 214, 255], [255, 214, 102]),
+	t.figText('READY', 0, yOffset, {
+		horizontalLayout: 'fitted',
+		charColor: (cell) => {
+			const wave = 0.5 + 0.5 * Math.sin(time + cell.col * 0.15 + cell.row * 0.3);
+			return [Math.round(100 + 155 * wave), Math.round(150 + 105 * (1.0 - wave)), 255];
+		},
 	});
-
-	t.figText(lines.secondary, 0, 6, {
-		...secondaryLayoutOptions,
-		charColor: (cell) =>
-			getWaveColor(phase, cell.inputIndex * 1.2 - cell.row * 0.5, [255, 120, 150], [255, 214, 102]),
-	});
-
-	writeLabel(
-		`font: ${font.name} | align: ${t.figTextAlign()} | baseline: ${t.figTextBaseline()}`,
-		12,
-		[220, 230, 255]
-	);
-	writeLabel(
-		`bounds: ${primaryBounds.cols}x${primaryBounds.rows} / ${secondaryBounds.cols}x${secondaryBounds.rows}`,
-		15,
-		[160, 180, 220]
-	);
 });
 
 t.windowResized(() => {

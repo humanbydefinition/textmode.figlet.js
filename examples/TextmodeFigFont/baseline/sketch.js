@@ -1,82 +1,92 @@
 /**
  * @title TextmodeFigFont.baseline
- * @author codex
  */
+
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
 	fontSize: 8,
-	frameRate: 60,
 	plugins: [FigletPlugin],
 });
 
+const labelLayer = t.layers.add();
 let font;
 let rendered;
 
-function writeLabel(text, y, color = [220, 220, 220]) {
-	const startX = -Math.floor(text.length / 2);
-	t.charColor(...color);
-
-	for (let i = 0; i < text.length; i++) {
-		t.push();
-		t.translate(startX + i, y);
-		t.char(text[i]);
-		t.point();
-		t.pop();
-	}
+function drawText(text, x, y, r = 220, g = 230, b = 255) {
+	t.push();
+	t.printAlign('left', 'top');
+	t.charColor(r, g, b);
+	t.print(text, x, y);
+	t.pop();
 }
 
-function drawGrid(grid, originX, originY, color = [124, 214, 255]) {
-	t.charColor(...color);
+t.setup(async () => {
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
+	t.figFont(font);
+	rendered = font.renderText('BASELINE');
+});
 
-	for (let row = 0; row < grid.length; row++) {
-		for (let col = 0; col < grid[row].length; col++) {
-			const cell = grid[row][col];
-			if (cell === ' ') {
-				continue;
-			}
+labelLayer.draw(() => {
+	t.clear();
+	const left = -Math.floor(t.grid.cols / 2);
+	const top = -Math.floor(t.grid.rows / 2);
+	let y = top + 3;
+	const x = left + 3;
 
+	drawText('TEXTMODEFIGFONT.BASELINE', x, y++, 100, 255, 140);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	drawText('CONCEPT: FONT BASELINE PROPERTY', x, y++, 100, 220, 255);
+	drawText('Vertical line where glyphs sit.', x, y++, 140, 160, 190);
+	drawText('Separates main body from descenders.', x, y++, 140, 160, 190);
+	drawText('------------------------------------', x, y++, 80, 100, 150);
+	if (font) {
+		drawText(`Baseline: row ${font.baseline}`, x, y++, 140, 255, 180);
+	} else {
+		drawText('Loading...', x, y++, 255, 180, 100);
+	}
+});
+
+t.draw(() => {
+	t.background(10, 12, 18);
+
+	if (!font || !rendered) return;
+
+	const startX = -Math.floor(rendered.cols / 2) - 2;
+	const startY = -Math.floor(rendered.rows / 2);
+	const time = t.secs * 1.5;
+
+	// Draw rendered text with baseline highlight
+	for (let row = 0; row < rendered.grid.length; row++) {
+		for (let col = 0; col < rendered.grid[row].length; col++) {
+			const char = rendered.grid[row][col];
+			if (char === ' ') continue;
+
+			const isBaseline = row === font.baseline - 1;
 			t.push();
-			t.translate(originX + col, originY + row);
-			t.char(cell);
+			t.translate(startX + col, startY + row);
+			if (isBaseline) {
+				const pulse = 0.5 + 0.5 * Math.sin(time * 3);
+				t.charColor(255, Math.round(150 + 105 * pulse), 100);
+			} else {
+				t.charColor(100, 200, 255);
+			}
+			t.char(char);
 			t.point();
 			t.pop();
 		}
 	}
-}
 
-function drawBaseline(originX, originY, cols, baseline) {
-	t.charColor(255, 120, 150);
-	t.char('-');
-
-	for (let col = 0; col < cols; col++) {
-		t.push();
-		t.translate(originX + col, originY + baseline);
-		t.point();
-		t.pop();
+	// Draw baseline guide line
+	t.push();
+	const pulse = 0.5 + 0.5 * Math.sin(time * 3.0);
+	t.charColor(255, Math.round(100 + 155 * pulse), 100);
+	const lineY = startY + font.baseline - 1;
+	for (let col = -2; col < rendered.cols + 2; col++) {
+		t.print('-', startX + col, lineY);
 	}
-}
-
-t.setup(async () => {
-	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Colossal.flf');
-	rendered = font.renderText('BASE');
-});
-
-t.draw(() => {
-	t.background(7, 10, 18);
-
-	if (!font || !rendered) {
-		writeLabel('loading baseline metadata...', 0, [255, 214, 102]);
-		return;
-	}
-
-	const originX = -Math.floor(rendered.cols / 2);
-	const originY = -7;
-
-	writeLabel('TextmodeFigFont.baseline', -13, [255, 214, 102]);
-	drawBaseline(originX, originY, rendered.cols, font.baseline);
-	drawGrid(rendered.grid, originX, originY);
-	writeLabel(`font.baseline -> row ${font.baseline}`, 10, [220, 230, 255]);
+	t.print('< BASELINE', startX + rendered.cols + 3, lineY);
+	t.pop();
 });
 
 t.windowResized(() => {

@@ -1,5 +1,5 @@
 import type { Textmodifier } from 'textmode.js';
-import { TextmodeColor } from 'textmode.js';
+import { color } from 'textmode.js';
 
 import { TextmodeFigFont } from '../figfont';
 import { FigletError } from '../error/FigletError';
@@ -43,7 +43,7 @@ function applyResolvedColor(
 	methodName: 'charColor' | 'cellColor',
 	value: FigTextColorValue
 ): void {
-	if (value instanceof TextmodeColor || typeof value === 'string') {
+	if (value instanceof color.TextmodeColor || typeof value === 'string') {
 		if (methodName === 'charColor') {
 			textmodifier.charColor(value);
 			return;
