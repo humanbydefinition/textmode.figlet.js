@@ -46,12 +46,6 @@ export type TextmodifierHarness = Textmodifier & {
 	pop: () => void;
 	translate: (x?: number, y?: number, z?: number) => void;
 	char: (value?: string | number) => string | void;
-	color: (
-		value: string | TextmodeColor | number,
-		g?: number,
-		b?: number,
-		a?: number
-	) => { normalized: [number, number, number, number] };
 	charColor: (value: string | TextmodeColor | number, g?: number, b?: number, a?: number) => void;
 	cellColor: (value: string | TextmodeColor | number, g?: number, b?: number, a?: number) => void;
 	point: (x?: number, y?: number, z?: number) => void;
@@ -136,11 +130,6 @@ export function createTextmodifierHarness(): TextmodifierHarness {
 			const charString = typeof value === 'number' ? (font.characters[value]?.character ?? '') : value;
 			renderer.state._character._setCharacter(font._getCharacterColor(charString));
 			renderer.state._character._setCharacterString(charString);
-		},
-		color(value: string | TextmodeColor | number, g?: number, b?: number, a?: number) {
-			return {
-				normalized: resolveColorChannels(value, g, b, a),
-			};
 		},
 		charColor(value: string | TextmodeColor | number, g?: number, b?: number, a?: number) {
 			const [r, green, blue, alpha] = resolveColorChannels(value, g, b, a);

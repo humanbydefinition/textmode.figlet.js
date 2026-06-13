@@ -188,11 +188,7 @@ function withLeftTopPrintAlignment(textmodifier: Textmodifier, render: () => voi
 	}
 }
 
-function createVisibleFigTextRuns(
-	plan: FigRenderPlan,
-	options: FigTextOptions,
-	textmodifier: Textmodifier
-): FigTextRun[] {
+function createVisibleFigTextRuns(plan: FigRenderPlan, options: FigTextOptions): FigTextRun[] {
 	const runs: FigTextRun[] = [];
 	const hasColorCallback = typeof options.charColor === 'function' || typeof options.cellColor === 'function';
 	let activeRun: FigTextRun | undefined;
@@ -200,9 +196,7 @@ function createVisibleFigTextRuns(
 	for (const cell of plan.cells) {
 		const charColor = hasColorCallback ? resolveColor(options.charColor, cell) : undefined;
 		const cellColor = hasColorCallback ? resolveColor(options.cellColor, cell) : undefined;
-		const styleKey = hasColorCallback
-			? `${getColorStyleKey(textmodifier, charColor)}|${getColorStyleKey(textmodifier, cellColor)}`
-			: 'static';
+		const styleKey = hasColorCallback ? `${getColorStyleKey(charColor)}|${getColorStyleKey(cellColor)}` : 'static';
 		const shouldStartRun =
 			!activeRun ||
 			activeRun.row !== cell.row ||
@@ -228,22 +222,24 @@ function createVisibleFigTextRuns(
 	return runs;
 }
 
-function getColorStyleKey(textmodifier: Textmodifier, value: FigTextColorValue | undefined): string {
+function getColorStyleKey(value: FigTextColorValue | undefined): string {
 	if (value === undefined) {
 		return 'current';
 	}
 
 	if (typeof value === 'number') {
-		return textmodifier.color(value).normalized.join(',');
+		return `number:${value}`;
 	}
 
-	if (value instanceof color.TextmodeColor || typeof value === 'string') {
-		return textmodifier.color(value).normalized.join(',');
+	if (typeof value === 'string') {
+		return `string:${value}`;
 	}
 
-	return value.length === 4
-		? textmodifier.color(value[0], value[1], value[2], value[3]).normalized.join(',')
-		: textmodifier.color(value[0], value[1], value[2]).normalized.join(',');
+	if (Array.isArray(value)) {
+		return `array:${value.length}:${value.join(',')}`;
+	}
+
+	return `color:${value.r},${value.g},${value.b},${value.a}`;
 }
 
 function renderFigTextRuns(
@@ -333,7 +329,7 @@ export function installTextmodifierFigletExtensions(textmodifier: Textmodifier):
 			const plan = figFont.planText(text, options);
 			const state = getFigletState(this);
 			const origin = getFigTextOrigin(plan, figFont, state, col, row);
-			const runs = createVisibleFigTextRuns(plan, options, this);
+			const runs = createVisibleFigTextRuns(plan, options);
 
 			renderFigTextRuns(this, runs, origin, options);
 		}
