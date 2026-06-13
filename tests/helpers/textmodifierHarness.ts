@@ -17,6 +17,16 @@ export class MockRenderer {
 		char: string;
 		charColor: [number, number, number, number];
 		cellColor: [number, number, number, number];
+		col?: number;
+		row?: number;
+	}> = [];
+	public prints: Array<{
+		text: string;
+		col: number;
+		row: number;
+		markup?: boolean;
+		charColor: [number, number, number, number];
+		cellColor: [number, number, number, number];
 	}> = [];
 
 	public _rect = vi.fn(() => {
@@ -36,9 +46,24 @@ export type TextmodifierHarness = Textmodifier & {
 	pop: () => void;
 	translate: (x?: number, y?: number, z?: number) => void;
 	char: (value?: string | number) => string | void;
+	color: (
+		value: string | TextmodeColor | number,
+		g?: number,
+		b?: number,
+		a?: number
+	) => { normalized: [number, number, number, number] };
 	charColor: (value: string | TextmodeColor | number, g?: number, b?: number, a?: number) => void;
 	cellColor: (value: string | TextmodeColor | number, g?: number, b?: number, a?: number) => void;
 	point: (x?: number, y?: number, z?: number) => void;
+	printAlign: (horizontal: 'left' | 'center' | 'right', vertical?: 'top' | 'middle' | 'bottom') => void;
+	print: (
+		str: string,
+		x: number,
+		y: number,
+		options?: { leading?: number; tabSize?: number; letterSpacing?: number; markup?: boolean }
+	) => void;
+	_printAlignHorizontal?: 'left' | 'center' | 'right';
+	_printAlignVertical?: 'top' | 'middle' | 'bottom';
 };
 
 function normalizeChannel(value: number): number {
@@ -112,6 +137,11 @@ export function createTextmodifierHarness(): TextmodifierHarness {
 			renderer.state._character._setCharacter(font._getCharacterColor(charString));
 			renderer.state._character._setCharacterString(charString);
 		},
+		color(value: string | TextmodeColor | number, g?: number, b?: number, a?: number) {
+			return {
+				normalized: resolveColorChannels(value, g, b, a),
+			};
+		},
 		charColor(value: string | TextmodeColor | number, g?: number, b?: number, a?: number) {
 			const [r, green, blue, alpha] = resolveColorChannels(value, g, b, a);
 			renderer.state._character._setCharColor(r, green, blue, alpha);
@@ -122,6 +152,37 @@ export function createTextmodifierHarness(): TextmodifierHarness {
 		},
 		point(_x?: number, _y?: number, _z?: number) {
 			renderer._rect(1, 1);
+		},
+		printAlign(horizontal: 'left' | 'center' | 'right', vertical: 'top' | 'middle' | 'bottom' = 'top') {
+			this._printAlignHorizontal = horizontal;
+			this._printAlignVertical = vertical;
+		},
+		print(
+			str: string,
+			x: number,
+			y: number,
+			options?: { leading?: number; tabSize?: number; letterSpacing?: number; markup?: boolean }
+		) {
+			renderer.prints.push({
+				text: str,
+				col: x,
+				row: y,
+				markup: options?.markup,
+				charColor: [...renderer.state._character._currentCharColor] as [number, number, number, number],
+				cellColor: [...renderer.state._character._currentCellColor] as [number, number, number, number],
+			});
+
+			for (let index = 0; index < str.length; index += 1) {
+				const char = str[index]!;
+				font._getCharacterColor(char);
+				renderer.draws.push({
+					char,
+					col: x + index,
+					row: y,
+					charColor: [...renderer.state._character._currentCharColor] as [number, number, number, number],
+					cellColor: [...renderer.state._character._currentCellColor] as [number, number, number, number],
+				});
+			}
 		},
 	} as TextmodifierHarness;
 }

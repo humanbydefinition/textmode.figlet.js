@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { RenderState } from '../../helpers/RenderState';
 import { createTextmodifierHarness } from '../../helpers/textmodifierHarness';
-import { readFigFontFixture } from '../../fixtures/builders/figFontBuilder';
+import { buildSingleWidthFigFont, readFigFontFixture } from '../../fixtures/builders/figFontBuilder';
 
 import { FigletPlugin, TextmodeFigFont } from '../../../src';
 
@@ -71,13 +71,16 @@ describe('FigletPlugin integration', () => {
 		});
 	});
 
-	it('renders non-blank FIGlet cells through char() and point()', () => {
+	it('renders non-blank FIGlet cells through batched print() runs', () => {
 		stub.figFont(figFont);
 		stub.figText('AB', 0, 0, { horizontalLayout: 'fitted' });
 
 		expect(stub.font._getCharacterColor).toHaveBeenCalledWith('A');
 		expect(stub.font._getCharacterColor).toHaveBeenCalledWith('B');
-		expect(stub._renderer._rect).toHaveBeenCalledTimes(4);
+		expect(stub._renderer._rect).not.toHaveBeenCalled();
+		expect(stub._renderer.prints.map((print) => print.text)).toEqual(['AB', 'AB']);
+		expect(stub._renderer.prints.every((print) => print.markup === false)).toBe(true);
+		expect(stub._renderer.draws).toHaveLength(4);
 
 		const state = RenderState._createStateObject();
 		stub._renderer.state._copyTo(state);
@@ -91,7 +94,13 @@ describe('FigletPlugin integration', () => {
 
 		expect(stub.font._getCharacterColor).toHaveBeenCalledWith('A');
 		expect(stub.font._getCharacterColor).toHaveBeenCalledWith('B');
-		expect(stub._renderer._rect).toHaveBeenCalledTimes(4);
+		expect(stub._renderer._rect).not.toHaveBeenCalled();
+		expect(stub._renderer.prints.map((print) => [print.text, print.row])).toEqual([
+			['A', 0],
+			['A', 1],
+			['B', 2],
+			['B', 3],
+		]);
 	});
 
 	it('renders wrapped FIGlet text as multiple logical lines', () => {
@@ -104,7 +113,13 @@ describe('FigletPlugin integration', () => {
 
 		expect(stub.font._getCharacterColor).toHaveBeenCalledWith('A');
 		expect(stub.font._getCharacterColor).toHaveBeenCalledWith('B');
-		expect(stub._renderer._rect).toHaveBeenCalledTimes(4);
+		expect(stub._renderer._rect).not.toHaveBeenCalled();
+		expect(stub._renderer.prints.map((print) => [print.text, print.row])).toEqual([
+			['A', 0],
+			['A', 1],
+			['B', 2],
+			['B', 3],
+		]);
 	});
 
 	it('renders right-to-left FIGlet text in reversed visual order when requested', () => {
@@ -115,6 +130,19 @@ describe('FigletPlugin integration', () => {
 		});
 
 		expect(stub._renderer.draws.map((draw) => draw.char)).toEqual(['B', 'A', 'B', 'A']);
+	});
+
+	it('does not draw blank FIGlet cells even with an active cell color', () => {
+		stub.figFont(figFont);
+		stub.cellColor(255, 0, 0);
+
+		stub.figText('A', 0, 0, { horizontalLayout: 'full' });
+
+		expect(stub._renderer._rect).not.toHaveBeenCalled();
+		expect(stub._renderer.prints.map((print) => print.text)).toEqual(['A', 'A']);
+		expect(stub._renderer.draws.map((draw) => draw.char)).toEqual(['A', 'A']);
+		expect(stub._renderer.draws.some((draw) => draw.char === ' ')).toBe(false);
+		expect(stub._renderer.draws.every((draw) => draw.cellColor[0] === 1)).toBe(true);
 	});
 
 	it('applies static per-cell FIGlet color overrides', () => {
@@ -149,21 +177,53 @@ describe('FigletPlugin integration', () => {
 
 	it('applies callback-based per-cell FIGlet color overrides using cell metadata', () => {
 		stub.figFont(figFont);
+		const charColor = vi.fn((cell) => (cell.inputChar === 'A' ? [255, 200, 0] : [0, 180, 255]));
+		const cellColor = vi.fn((cell) => (cell.col === 0 ? [12, 24, 36, 255] : undefined));
+
 		stub.figText('AB', 0, 0, {
 			horizontalLayout: 'fitted',
-			charColor: (cell) => (cell.inputChar === 'A' ? [255, 200, 0] : [0, 180, 255]),
-			cellColor: (cell) => (cell.col === 0 ? [12, 24, 36, 255] : undefined),
+			charColor,
+			cellColor,
 		});
 
 		const aDraws = stub._renderer.draws.filter((draw) => draw.char === 'A');
 		const bDraws = stub._renderer.draws.filter((draw) => draw.char === 'B');
 
+		expect(charColor).toHaveBeenCalledTimes(4);
+		expect(cellColor).toHaveBeenCalledTimes(4);
+		expect(charColor.mock.calls.map(([cell]) => `${cell.char}:${cell.col},${cell.row}`)).toEqual([
+			'A:0,0',
+			'B:1,0',
+			'A:0,1',
+			'B:1,1',
+		]);
 		expect(aDraws).not.toHaveLength(0);
 		expect(bDraws).not.toHaveLength(0);
 		expect(aDraws.every((draw) => draw.charColor[0] === 1 && draw.charColor[1] === 200 / 255)).toBe(true);
 		expect(bDraws.every((draw) => draw.charColor[0] === 0 && draw.charColor[2] === 1)).toBe(true);
 		expect(stub._renderer.draws.some((draw) => draw.cellColor[0] === 12 / 255)).toBe(true);
 		expect(stub._renderer.draws.some((draw) => draw.cellColor[0] === 0)).toBe(true);
+	});
+
+	it('batches callback-colored cells with matching styles and splits changed styles', () => {
+		stub.figFont(figFont);
+
+		stub.figText('AB', 0, 0, {
+			horizontalLayout: 'fitted',
+			charColor: () => [10, 20, 30],
+		});
+
+		expect(stub._renderer.prints.map((print) => print.text)).toEqual(['AB', 'AB']);
+
+		stub = createTextmodifierHarness();
+		FigletPlugin.install(stub, {} as never);
+		stub.figFont(figFont);
+		stub.figText('AB', 0, 0, {
+			horizontalLayout: 'fitted',
+			charColor: (cell) => (cell.inputChar === 'A' ? [10, 20, 30] : [40, 50, 60]),
+		});
+
+		expect(stub._renderer.prints.map((print) => print.text)).toEqual(['A', 'B', 'A', 'B']);
 	});
 
 	it('applies zero-valued callback FIGlet color overrides', () => {
@@ -195,7 +255,53 @@ describe('FigletPlugin integration', () => {
 		stub._renderer.state._copyTo(state);
 		expect(state._translationX).toBe(0);
 		expect(state._translationY).toBe(0);
-		expect(stub._renderer._rect).toHaveBeenCalledTimes(4);
+		expect(stub._renderer._rect).not.toHaveBeenCalled();
+		expect(stub._renderer.prints.map((print) => [print.text, print.col, print.row])).toEqual([
+			['AB', 4, 5],
+			['AB', 4, 6],
+		]);
+	});
+
+	it('prints literal brackets with markup disabled', () => {
+		const bracketFont = TextmodeFigFont._fromString('single', buildSingleWidthFigFont());
+		stub.figFont(bracketFont);
+
+		stub.figText('[]', 0, 0, { horizontalLayout: 'full' });
+
+		expect(stub._renderer.prints).toHaveLength(1);
+		expect(stub._renderer.prints[0]).toMatchObject({
+			text: '[]',
+			markup: false,
+		});
+		expect(stub._renderer.draws.map((draw) => draw.char)).toEqual(['[', ']']);
+	});
+
+	it('restores print alignment settings after FIGlet rendering', () => {
+		stub.figFont(figFont);
+		stub.printAlign('right', 'bottom');
+
+		stub.figText('AB', 0, 0, { horizontalLayout: 'fitted' });
+
+		expect(stub._printAlignHorizontal).toBe('right');
+		expect(stub._printAlignVertical).toBe('bottom');
+	});
+
+	it('preserves transform and character state after FIGlet rendering', () => {
+		stub.figFont(figFont);
+		stub.translate(3, 4, 0);
+		stub.char('Z');
+		stub.charColor(10, 20, 30);
+		stub.cellColor(40, 50, 60);
+
+		stub.figText('AB', 0, 0, { horizontalLayout: 'fitted', charColor: [255, 0, 0] });
+
+		const state = RenderState._createStateObject();
+		stub._renderer.state._copyTo(state);
+		expect(state._translationX).toBe(3);
+		expect(state._translationY).toBe(4);
+		expect(state._character._currentCharacterString).toBe('Z');
+		expect(state._character._currentCharColor).toEqual([10 / 255, 20 / 255, 30 / 255, 1]);
+		expect(state._character._currentCellColor).toEqual([40 / 255, 50 / 255, 60 / 255, 1]);
 	});
 
 	it('throws when rendering or measuring without an active FIGlet font', () => {

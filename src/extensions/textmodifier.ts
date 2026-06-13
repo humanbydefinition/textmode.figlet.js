@@ -7,6 +7,7 @@ import { clearFigletState, getFigletState } from '../state/figletState';
 
 import type {
 	FigRenderCell,
+	FigRenderPlan,
 	FigTextAlign,
 	FigTextBaseline,
 	FigTextColorResolver,
@@ -29,6 +30,25 @@ const TEXTMODIFIER_EXTENSION_NAMES = [
 type DisposableTracker = Textmodifier & {
 	_trackDisposable?: (disposable: TextmodeFigFont) => void;
 };
+
+type TextmodifierPrintAlignment = Textmodifier & {
+	_printAlignHorizontal?: 'left' | 'center' | 'right';
+	_printAlignVertical?: 'top' | 'middle' | 'bottom';
+};
+
+interface FigTextOrigin {
+	col: number;
+	row: number;
+}
+
+interface FigTextRun {
+	text: string;
+	col: number;
+	row: number;
+	charColor?: FigTextColorValue;
+	cellColor?: FigTextColorValue;
+	styleKey: string;
+}
 
 function resolveColor(value: FigTextColorResolver | undefined, cell: FigRenderCell): FigTextColorValue | undefined {
 	if (value === undefined) {
@@ -131,6 +151,152 @@ function defineInstanceMethod(textmodifier: Textmodifier, methodName: string, im
 	});
 }
 
+function getFigTextOrigin(
+	plan: FigRenderPlan,
+	figFont: TextmodeFigFont,
+	state: { align: FigTextAlign; baseline: FigTextBaseline },
+	col: number,
+	row: number
+): FigTextOrigin {
+	return {
+		col: col + getHorizontalOffset(plan.cols, state.align),
+		row: row + getVerticalOffset(plan.rows, figFont.baseline, state.baseline),
+	};
+}
+
+function withLeftTopPrintAlignment(textmodifier: Textmodifier, render: () => void): void {
+	const alignedTextmodifier = textmodifier as TextmodifierPrintAlignment;
+	const previousHorizontal = alignedTextmodifier._printAlignHorizontal;
+	const previousVertical = alignedTextmodifier._printAlignVertical;
+
+	textmodifier.printAlign('left', 'top');
+
+	try {
+		render();
+	} finally {
+		if (previousHorizontal === undefined) {
+			delete alignedTextmodifier._printAlignHorizontal;
+		} else {
+			alignedTextmodifier._printAlignHorizontal = previousHorizontal;
+		}
+
+		if (previousVertical === undefined) {
+			delete alignedTextmodifier._printAlignVertical;
+		} else {
+			alignedTextmodifier._printAlignVertical = previousVertical;
+		}
+	}
+}
+
+function createVisibleFigTextRuns(
+	plan: FigRenderPlan,
+	options: FigTextOptions,
+	textmodifier: Textmodifier
+): FigTextRun[] {
+	const runs: FigTextRun[] = [];
+	const hasColorCallback = typeof options.charColor === 'function' || typeof options.cellColor === 'function';
+	let activeRun: FigTextRun | undefined;
+
+	for (const cell of plan.cells) {
+		const charColor = hasColorCallback ? resolveColor(options.charColor, cell) : undefined;
+		const cellColor = hasColorCallback ? resolveColor(options.cellColor, cell) : undefined;
+		const styleKey = hasColorCallback
+			? `${getColorStyleKey(textmodifier, charColor)}|${getColorStyleKey(textmodifier, cellColor)}`
+			: 'static';
+		const shouldStartRun =
+			!activeRun ||
+			activeRun.row !== cell.row ||
+			activeRun.col + activeRun.text.length !== cell.col ||
+			activeRun.styleKey !== styleKey;
+
+		if (shouldStartRun) {
+			activeRun = {
+				text: cell.char,
+				col: cell.col,
+				row: cell.row,
+				charColor,
+				cellColor,
+				styleKey,
+			};
+			runs.push(activeRun);
+			continue;
+		}
+
+		activeRun!.text += cell.char;
+	}
+
+	return runs;
+}
+
+function getColorStyleKey(textmodifier: Textmodifier, value: FigTextColorValue | undefined): string {
+	if (value === undefined) {
+		return 'current';
+	}
+
+	if (typeof value === 'number') {
+		return textmodifier.color(value).normalized.join(',');
+	}
+
+	if (value instanceof color.TextmodeColor || typeof value === 'string') {
+		return textmodifier.color(value).normalized.join(',');
+	}
+
+	return value.length === 4
+		? textmodifier.color(value[0], value[1], value[2], value[3]).normalized.join(',')
+		: textmodifier.color(value[0], value[1], value[2]).normalized.join(',');
+}
+
+function renderFigTextRuns(
+	textmodifier: Textmodifier,
+	runs: FigTextRun[],
+	origin: FigTextOrigin,
+	options: FigTextOptions
+): void {
+	const hasColorCallback = typeof options.charColor === 'function' || typeof options.cellColor === 'function';
+
+	withLeftTopPrintAlignment(textmodifier, () => {
+		if (!hasColorCallback) {
+			const charColor = typeof options.charColor === 'function' ? undefined : options.charColor;
+			const cellColor = typeof options.cellColor === 'function' ? undefined : options.cellColor;
+
+			textmodifier.push();
+			try {
+				if (charColor !== undefined) {
+					applyResolvedColor(textmodifier, 'charColor', charColor);
+				}
+
+				if (cellColor !== undefined) {
+					applyResolvedColor(textmodifier, 'cellColor', cellColor);
+				}
+
+				for (const run of runs) {
+					textmodifier.print(run.text, origin.col + run.col, origin.row + run.row, { markup: false });
+				}
+			} finally {
+				textmodifier.pop();
+			}
+			return;
+		}
+
+		for (const run of runs) {
+			textmodifier.push();
+			try {
+				if (run.charColor !== undefined) {
+					applyResolvedColor(textmodifier, 'charColor', run.charColor);
+				}
+
+				if (run.cellColor !== undefined) {
+					applyResolvedColor(textmodifier, 'cellColor', run.cellColor);
+				}
+
+				textmodifier.print(run.text, origin.col + run.col, origin.row + run.row, { markup: false });
+			} finally {
+				textmodifier.pop();
+			}
+		}
+	});
+}
+
 /**
  * Install FIGlet Textmodifier extensions on a specific `Textmodifier` instance.
  *
@@ -166,35 +332,10 @@ export function installTextmodifierFigletExtensions(textmodifier: Textmodifier):
 			const figFont = getActiveFigFont(this);
 			const plan = figFont.planText(text, options);
 			const state = getFigletState(this);
-			const startCol = col + getHorizontalOffset(plan.cols, state.align);
-			const startRow = row + getVerticalOffset(plan.rows, figFont.baseline, state.baseline);
+			const origin = getFigTextOrigin(plan, figFont, state, col, row);
+			const runs = createVisibleFigTextRuns(plan, options, this);
 
-			this.push();
-			this.translate(startCol, startRow, 0);
-
-			for (const cell of plan.cells) {
-				this.push();
-				this.translate(cell.col, cell.row, 0);
-				const charColor = resolveColor(options.charColor, cell);
-				const cellColor = resolveColor(options.cellColor, cell);
-
-				this.char(cell.char);
-
-				// Apply per-cell overrides after selecting the glyph so the emitted draw
-				// uses the requested colors regardless of the runtime's internal ordering.
-				if (charColor !== undefined) {
-					applyResolvedColor(this, 'charColor', charColor);
-				}
-
-				if (cellColor !== undefined) {
-					applyResolvedColor(this, 'cellColor', cellColor);
-				}
-
-				this.point();
-				this.pop();
-			}
-
-			this.pop();
+			renderFigTextRuns(this, runs, origin, options);
 		}
 	);
 

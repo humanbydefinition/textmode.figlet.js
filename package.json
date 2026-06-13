@@ -46,7 +46,7 @@
 		"prepare": "husky"
 	},
 	"peerDependencies": {
-		"textmode.js": ">=0.11.0"
+		"textmode.js": ">=0.16.0"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^20.5.0",

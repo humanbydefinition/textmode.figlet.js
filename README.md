@@ -34,7 +34,7 @@
 
 To get started with `textmode.figlet.js`, you'll need:
 
-- `textmode.js` `0.11.0` or newer
+- `textmode.js` `0.16.0` or newer
 - A modern browser with the same runtime requirements as `textmode.js`
 - Node.js `20.8.1+` and `npm` (optional, for ESM installation)
 
