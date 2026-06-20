@@ -9,6 +9,8 @@ import { installTextmodifierFigletExtensions, uninstallTextmodifierFigletExtensi
  *
  * @example
  * {@includeCode ../../examples/FigletPlugin/init/sketch.js}
+ *
+ * @see {@link https://code.textmode.art/api/textmode.figlet.js/variables/FigletPlugin | FigletPlugin API reference}
  */
 export const FigletPlugin: TextmodePlugin = {
 	name: packageJson.name,

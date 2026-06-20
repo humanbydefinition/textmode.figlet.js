@@ -7,6 +7,8 @@ import type { FigTextAlign, FigTextBaseline, FigTextOptions } from '../figfont';
 /**
  * FIGlet methods added to the `textmode.js` `Textmodifier` API when
  * {@link FigletPlugin} is installed.
+ *
+ * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/TextmodifierFigletExtensions | TextmodifierFigletExtensions API reference}
  */
 export interface TextmodifierFigletExtensions {
 	/**
@@ -17,6 +19,8 @@ export interface TextmodifierFigletExtensions {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/Textmodifier/loadFigFont/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/TextmodifierFigletExtensions/methods/loadFigFont | TextmodifierFigletExtensions.loadFigFont API reference}
 	 */
 	loadFigFont(source: string | URL): Promise<TextmodeFigFont>;
 
@@ -29,6 +33,8 @@ export interface TextmodifierFigletExtensions {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/Textmodifier/parseFigFont/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/TextmodifierFigletExtensions/methods/parseFigFont | TextmodifierFigletExtensions.parseFigFont API reference}
 	 */
 	parseFigFont(name: string, data: string): TextmodeFigFont;
 
@@ -39,6 +45,8 @@ export interface TextmodifierFigletExtensions {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/Textmodifier/figFont/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/TextmodifierFigletExtensions/methods/figFont | TextmodifierFigletExtensions.figFont API reference}
 	 */
 	figFont(): TextmodeFigFont | undefined;
 
@@ -46,6 +54,8 @@ export interface TextmodifierFigletExtensions {
 	 * Set the active FIGlet font used by `figText()`.
 	 *
 	 * @param font The FIGlet font to use for subsequent text rendering.
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/TextmodifierFigletExtensions/methods/figFont | TextmodifierFigletExtensions.figFont API reference}
 	 */
 	figFont(font: TextmodeFigFont): void;
 
@@ -59,6 +69,8 @@ export interface TextmodifierFigletExtensions {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/Textmodifier/figText/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/TextmodifierFigletExtensions/methods/figText | TextmodifierFigletExtensions.figText API reference}
 	 */
 	figText(text: string, col: number, row: number, options?: FigTextOptions): void;
 
@@ -71,6 +83,8 @@ export interface TextmodifierFigletExtensions {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/Textmodifier/figTextWidth/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/TextmodifierFigletExtensions/methods/figTextWidth | TextmodifierFigletExtensions.figTextWidth API reference}
 	 */
 	figTextWidth(text: string, options?: FigTextOptions): number;
 
@@ -83,6 +97,8 @@ export interface TextmodifierFigletExtensions {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/Textmodifier/figTextHeight/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/TextmodifierFigletExtensions/methods/figTextHeight | TextmodifierFigletExtensions.figTextHeight API reference}
 	 */
 	figTextHeight(text: string, options?: FigTextOptions): number;
 
@@ -95,6 +111,8 @@ export interface TextmodifierFigletExtensions {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/Textmodifier/figTextBounds/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/TextmodifierFigletExtensions/methods/figTextBounds | TextmodifierFigletExtensions.figTextBounds API reference}
 	 */
 	figTextBounds(text: string, options?: FigTextOptions): { cols: number; rows: number };
 
@@ -105,6 +123,8 @@ export interface TextmodifierFigletExtensions {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/Textmodifier/figTextAlign/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/TextmodifierFigletExtensions/methods/figTextAlign | TextmodifierFigletExtensions.figTextAlign API reference}
 	 */
 	figTextAlign(): FigTextAlign;
 
@@ -112,6 +132,8 @@ export interface TextmodifierFigletExtensions {
 	 * Set the horizontal FIGlet text alignment.
 	 *
 	 * @param align Alignment mode for subsequent `figText()` calls.
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/TextmodifierFigletExtensions/methods/figTextAlign | TextmodifierFigletExtensions.figTextAlign API reference}
 	 */
 	figTextAlign(align: FigTextAlign): void;
 
@@ -122,6 +144,8 @@ export interface TextmodifierFigletExtensions {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/Textmodifier/figTextBaseline/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/TextmodifierFigletExtensions/methods/figTextBaseline | TextmodifierFigletExtensions.figTextBaseline API reference}
 	 */
 	figTextBaseline(): FigTextBaseline;
 
@@ -129,6 +153,8 @@ export interface TextmodifierFigletExtensions {
 	 * Set the vertical FIGlet text baseline mode.
 	 *
 	 * @param baseline Baseline mode for subsequent `figText()` calls.
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/TextmodifierFigletExtensions/methods/figTextBaseline | TextmodifierFigletExtensions.figTextBaseline API reference}
 	 */
 	figTextBaseline(baseline: FigTextBaseline): void;
 }
