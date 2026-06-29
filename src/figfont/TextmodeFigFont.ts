@@ -28,6 +28,8 @@ interface ResolvedFigInputCharacter {
 
 /**
  * Parsed FIGfont resource used by `figText()` rendering.
+ *
+ * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont | TextmodeFigFont API reference}
  */
 export class TextmodeFigFont extends Disposable {
 	private readonly _name: string;
@@ -87,6 +89,8 @@ export class TextmodeFigFont extends Disposable {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/TextmodeFigFont/getCharacter/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/methods/getCharacter | TextmodeFigFont.getCharacter API reference}
 	 */
 	public getCharacter(value: number | string): FigCharacter | undefined {
 		const codePoint = typeof value === 'number' ? value : Array.from(value)[0]?.codePointAt(0);
@@ -103,6 +107,8 @@ export class TextmodeFigFont extends Disposable {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/TextmodeFigFont/planText/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/methods/planText | TextmodeFigFont.planText API reference}
 	 */
 	public planText(text: string, options: FigTextOptions = {}): FigRenderPlan {
 		const horizontalLayout = options.horizontalLayout ?? this.defaultLayout;
@@ -139,6 +145,8 @@ export class TextmodeFigFont extends Disposable {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/TextmodeFigFont/renderText/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/methods/renderText | TextmodeFigFont.renderText API reference}
 	 */
 	public renderText(text: string, options: FigTextOptions = {}): FigTextResult {
 		const plan = this.planText(text, options);
@@ -160,6 +168,8 @@ export class TextmodeFigFont extends Disposable {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/TextmodeFigFont/measureText/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/methods/measureText | TextmodeFigFont.measureText API reference}
 	 */
 	public measureText(text: string, options: FigTextOptions = {}): { cols: number; rows: number } {
 		const plan = this.planText(text, options);
@@ -171,6 +181,8 @@ export class TextmodeFigFont extends Disposable {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/TextmodeFigFont/name/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/accessors/name | TextmodeFigFont.name API reference}
 	 */
 	get name(): string {
 		return this._name;
@@ -181,6 +193,8 @@ export class TextmodeFigFont extends Disposable {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/TextmodeFigFont/header/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/accessors/header | TextmodeFigFont.header API reference}
 	 */
 	get header(): FigFontHeader {
 		return {
@@ -193,6 +207,8 @@ export class TextmodeFigFont extends Disposable {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/TextmodeFigFont/characters/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/accessors/characters | TextmodeFigFont.characters API reference}
 	 */
 	get characters(): Map<number, FigCharacter> {
 		return new Map(
@@ -205,6 +221,8 @@ export class TextmodeFigFont extends Disposable {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/TextmodeFigFont/hardblank/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/accessors/hardblank | TextmodeFigFont.hardblank API reference}
 	 */
 	get hardblank(): string {
 		return this._header.hardblank;
@@ -215,6 +233,8 @@ export class TextmodeFigFont extends Disposable {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/TextmodeFigFont/height/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/accessors/height | TextmodeFigFont.height API reference}
 	 */
 	get height(): number {
 		return this._header.height;
@@ -225,6 +245,8 @@ export class TextmodeFigFont extends Disposable {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/TextmodeFigFont/baseline/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/accessors/baseline | TextmodeFigFont.baseline API reference}
 	 */
 	get baseline(): number {
 		return this._header.baseline;
@@ -235,6 +257,8 @@ export class TextmodeFigFont extends Disposable {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/TextmodeFigFont/defaultLayout/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/accessors/defaultLayout | TextmodeFigFont.defaultLayout API reference}
 	 */
 	get defaultLayout(): FigHorizontalLayout {
 		if ((this._header.fullLayout & 128) !== 0) {
@@ -261,6 +285,8 @@ export class TextmodeFigFont extends Disposable {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/TextmodeFigFont/defaultPrintDirection/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/accessors/defaultPrintDirection | TextmodeFigFont.defaultPrintDirection API reference}
 	 */
 	get defaultPrintDirection(): 'ltr' | 'rtl' {
 		return this._header.printDirection === 1 ? 'rtl' : 'ltr';
@@ -271,6 +297,8 @@ export class TextmodeFigFont extends Disposable {
 	 *
 	 * @example
 	 * {@includeCode ../../examples/TextmodeFigFont/defaultVerticalLayout/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/accessors/defaultVerticalLayout | TextmodeFigFont.defaultVerticalLayout API reference}
 	 */
 	get defaultVerticalLayout(): FigVerticalLayout {
 		if ((this._header.fullLayout & 16384) !== 0) {
