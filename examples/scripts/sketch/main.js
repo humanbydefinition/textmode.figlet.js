@@ -44,10 +44,9 @@ if (!examplePath || !isValidPath(examplePath)) {
 	showError('Invalid example path.');
 } else {
 	window.textmode = textmodeModule.textmode;
-	window.TextmodeErrorLevel = textmodeModule.errors.TextmodeErrorLevel;
+	window.TextmodeErrorLevel = textmodeModule.TextmodeErrorLevel;
 	window.FigletPlugin = figletModule.FigletPlugin;
 	window.TextmodeFigFont = figletModule.TextmodeFigFont;
-	window.__TEXTMODE_EXAMPLE_PATH__ = examplePath;
 
 	document.title = `textmode.figlet.js - ${examplePath}`;
 	const base = document.createElement('base');
