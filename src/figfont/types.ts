@@ -155,11 +155,7 @@ export type FigPrintDirection = 'font' | 'ltr' | 'rtl';
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/type-aliases/FigTextColorValue | FigTextColorValue API reference}
  */
 export type FigTextColorValue =
-	| number
-	| string
-	| color.TextmodeColor
-	| [number, number, number]
-	| [number, number, number, number];
+	number | string | color.TextmodeColor | [number, number, number] | [number, number, number, number];
 
 /**
  * Public cell metadata exposed to FIGlet styling callbacks.
