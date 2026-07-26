@@ -69,11 +69,6 @@
 			"description": "FIGfont loading, metadata inspection, layout defaults, measurement, and rendering demos",
 			"examples": [
 				{
-					"title": "TextmodeFigFont.fromString",
-					"sourceFile": "examples/TextmodeFigFont/fromString/sketch.js",
-					"status": "unrated"
-				},
-				{
 					"title": "TextmodeFigFont.getCharacter",
 					"sourceFile": "examples/TextmodeFigFont/getCharacter/sketch.js",
 					"status": "unrated"
