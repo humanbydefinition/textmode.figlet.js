@@ -2,6 +2,8 @@
 
 <div align="center">
 
+<img alt="textmode.figlet.js — draw FIGlet in textmode" src=".github/assets/readme-og.png" />
+
 <table>
 	<tr>
 		<td align="center">
