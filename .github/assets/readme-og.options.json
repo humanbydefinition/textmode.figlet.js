@@ -27,7 +27,7 @@
 			"mainTopRight": "TEXTMODE.JS ADD-ON",
 			"mainHeadlinePrefix": "DRAW",
 			"mainHeadlineEmphasis": "TEXTMODE",
-			"mainHeadlineSecondLine": "WITH FIGLET",
+			"mainHeadlineSecondLine": "FROM FIGLET FONTS",
 			"mainBottomLeft": "PARSE / LAYOUT / MEASURE / RENDER",
 			"mainBottomRight": "CODE.TEXTMODE.ART"
 		}
