@@ -8,39 +8,48 @@
 			"examples": [
 				{
 					"title": "Textmodifier.loadFigFont",
-					"sourceFile": "examples/Textmodifier/loadFigFont/sketch.js"
+					"sourceFile": "examples/Textmodifier/loadFigFont/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "Textmodifier.parseFigFont",
-					"sourceFile": "examples/Textmodifier/parseFigFont/sketch.js"
+					"sourceFile": "examples/Textmodifier/parseFigFont/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "Textmodifier.figFont",
-					"sourceFile": "examples/Textmodifier/figFont/sketch.js"
+					"sourceFile": "examples/Textmodifier/figFont/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "Textmodifier.figText",
-					"sourceFile": "examples/Textmodifier/figText/sketch.js"
+					"sourceFile": "examples/Textmodifier/figText/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "Textmodifier.figTextWidth",
-					"sourceFile": "examples/Textmodifier/figTextWidth/sketch.js"
+					"sourceFile": "examples/Textmodifier/figTextWidth/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "Textmodifier.figTextHeight",
-					"sourceFile": "examples/Textmodifier/figTextHeight/sketch.js"
+					"sourceFile": "examples/Textmodifier/figTextHeight/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "Textmodifier.figTextBounds",
-					"sourceFile": "examples/Textmodifier/figTextBounds/sketch.js"
+					"sourceFile": "examples/Textmodifier/figTextBounds/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "Textmodifier.figTextAlign",
-					"sourceFile": "examples/Textmodifier/figTextAlign/sketch.js"
+					"sourceFile": "examples/Textmodifier/figTextAlign/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "Textmodifier.figTextBaseline",
-					"sourceFile": "examples/Textmodifier/figTextBaseline/sketch.js"
+					"sourceFile": "examples/Textmodifier/figTextBaseline/sketch.js",
+					"status": "unrated"
 				}
 			]
 		},
@@ -50,7 +59,8 @@
 			"examples": [
 				{
 					"title": "FigletPlugin.init",
-					"sourceFile": "examples/FigletPlugin/init/sketch.js"
+					"sourceFile": "examples/FigletPlugin/init/sketch.js",
+					"status": "unrated"
 				}
 			]
 		},
@@ -60,55 +70,68 @@
 			"examples": [
 				{
 					"title": "TextmodeFigFont.getCharacter",
-					"sourceFile": "examples/TextmodeFigFont/getCharacter/sketch.js"
+					"sourceFile": "examples/TextmodeFigFont/getCharacter/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "TextmodeFigFont.planText",
-					"sourceFile": "examples/TextmodeFigFont/planText/sketch.js"
+					"sourceFile": "examples/TextmodeFigFont/planText/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "TextmodeFigFont.renderText",
-					"sourceFile": "examples/TextmodeFigFont/renderText/sketch.js"
+					"sourceFile": "examples/TextmodeFigFont/renderText/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "TextmodeFigFont.measureText",
-					"sourceFile": "examples/TextmodeFigFont/measureText/sketch.js"
+					"sourceFile": "examples/TextmodeFigFont/measureText/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "TextmodeFigFont.name",
-					"sourceFile": "examples/TextmodeFigFont/name/sketch.js"
+					"sourceFile": "examples/TextmodeFigFont/name/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "TextmodeFigFont.header",
-					"sourceFile": "examples/TextmodeFigFont/header/sketch.js"
+					"sourceFile": "examples/TextmodeFigFont/header/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "TextmodeFigFont.characters",
-					"sourceFile": "examples/TextmodeFigFont/characters/sketch.js"
+					"sourceFile": "examples/TextmodeFigFont/characters/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "TextmodeFigFont.hardblank",
-					"sourceFile": "examples/TextmodeFigFont/hardblank/sketch.js"
+					"sourceFile": "examples/TextmodeFigFont/hardblank/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "TextmodeFigFont.height",
-					"sourceFile": "examples/TextmodeFigFont/height/sketch.js"
+					"sourceFile": "examples/TextmodeFigFont/height/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "TextmodeFigFont.baseline",
-					"sourceFile": "examples/TextmodeFigFont/baseline/sketch.js"
+					"sourceFile": "examples/TextmodeFigFont/baseline/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "TextmodeFigFont.defaultLayout",
-					"sourceFile": "examples/TextmodeFigFont/defaultLayout/sketch.js"
+					"sourceFile": "examples/TextmodeFigFont/defaultLayout/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "TextmodeFigFont.defaultPrintDirection",
-					"sourceFile": "examples/TextmodeFigFont/defaultPrintDirection/sketch.js"
+					"sourceFile": "examples/TextmodeFigFont/defaultPrintDirection/sketch.js",
+					"status": "unrated"
 				},
 				{
 					"title": "TextmodeFigFont.defaultVerticalLayout",
-					"sourceFile": "examples/TextmodeFigFont/defaultVerticalLayout/sketch.js"
+					"sourceFile": "examples/TextmodeFigFont/defaultVerticalLayout/sketch.js",
+					"status": "unrated"
 				}
 			]
 		}
