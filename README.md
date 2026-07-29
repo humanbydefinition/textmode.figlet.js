@@ -32,81 +32,8 @@
 
 ## Installation
 
-### Prerequisites
-
-To get started with `textmode.figlet.js`, you'll need:
-
-- `textmode.js` `0.11.0` or newer
-- A modern browser with the same runtime requirements as `textmode.js`
-- Node.js `20.8.1+` and `npm` (optional, for ESM installation)
-
-### UMD
-
-To use `textmode.figlet.js` in a browser without a bundler, load the UMD builds for both `textmode.js` and this add-on. `textmode.js` must be loaded first so the FIGlet add-on can attach to the expected global runtime.
-
-```html
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<title>textmode.figlet.js sketch</title>
-
-		<script src="https://cdn.jsdelivr.net/npm/textmode.js@latest/dist/textmode.umd.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/textmode.figlet.js@latest/dist/textmode.figlet.umd.js"></script>
-	</head>
-	<body>
-		<script src="./sketch.js"></script>
-	</body>
-</html>
-```
-
-```js
-const t = textmode.create({
-	width: window.innerWidth,
-	height: window.innerHeight,
-	fontSize: 16,
-	plugins: [FigletPlugin],
-});
-
-t.setup(async () => {
-	const bulbhead = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
-
-	t.figFont(bulbhead);
-	t.figTextAlign('center');
-	t.figTextBaseline('center');
-});
-
-t.draw(() => {
-	t.background(8, 12, 24);
-	t.charColor(255, 220, 120);
-	t.figText('FIGLET', 0, 0, {
-		horizontalLayout: 'fitted',
-	});
-});
-
-t.windowResized(() => {
-	t.resizeCanvas(window.innerWidth, window.innerHeight);
-});
-```
-
-The UMD bundle exposes `FigletPlugin` globally, along with the other runtime exports such as `TextmodeFigFont` and `FigFontParser`.
-
-### ESM
-
-Install the core library and the FIGlet add-on together:
-
-```bash
-npm install textmode.js textmode.figlet.js
-```
-
-Then import both packages in your sketch or application code:
-
-```ts
-import { textmode } from 'textmode.js';
-import { FigletPlugin } from 'textmode.figlet.js';
-```
-
-Importing `textmode.figlet.js` provides the TypeScript augmentation. Installing `FigletPlugin` enables the runtime FIGlet methods on that `Textmodifier` instance.
+Follow the [official installation guide](https://code.textmode.art/docs/installation) to install
+`textmode.figlet.js` alongside `textmode.js` with npm or browser-ready UMD bundles.
 
 ## Plugin setup
 
@@ -121,7 +48,8 @@ const t = textmode.create({
 });
 ```
 
-The plugin installs the FIGlet drawing and measurement API during setup and removes it again if the plugin is uninstalled.
+Importing `textmode.figlet.js` provides the TypeScript augmentation. The plugin installs the FIGlet drawing
+and measurement API during setup and removes it again if the plugin is uninstalled.
 
 ## Loading `.flf` fonts
 
