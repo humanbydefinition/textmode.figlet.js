@@ -26,8 +26,8 @@
 			"brandName": "textmode.figlet.js",
 			"mainTopRight": "TEXTMODE.JS ADD-ON",
 			"mainHeadlinePrefix": "DRAW",
-			"mainHeadlineEmphasis": "FIGLET",
-			"mainHeadlineSecondLine": "IN TEXTMODE",
+			"mainHeadlineEmphasis": "TEXTMODE",
+			"mainHeadlineSecondLine": "WITH FIGLET",
 			"mainBottomLeft": "PARSE / LAYOUT / MEASURE / RENDER",
 			"mainBottomRight": "CODE.TEXTMODE.ART"
 		}
