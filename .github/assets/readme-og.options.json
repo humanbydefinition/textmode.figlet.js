@@ -24,12 +24,12 @@
 		"logo": "default",
 		"labels": {
 			"brandName": "textmode.figlet.js",
-			"mainTopRight": "FIGLET + FIGFONT ADD-ON",
+			"mainTopRight": "TEXTMODE.JS ADD-ON",
 			"mainHeadlinePrefix": "DRAW",
 			"mainHeadlineEmphasis": "FIGLET",
 			"mainHeadlineSecondLine": "IN TEXTMODE",
 			"mainBottomLeft": "PARSE / LAYOUT / MEASURE / RENDER",
-			"mainBottomRight": "TEXTMODE.JS ADD-ON"
+			"mainBottomRight": "CODE.TEXTMODE.ART"
 		}
 	}
 }
