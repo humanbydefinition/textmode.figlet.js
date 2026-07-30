@@ -4,19 +4,8 @@
 
 <img alt="textmode.figlet.js — draw FIGlet in textmode" src=".github/assets/readme-og.png" />
 
-<table>
-	<tr>
-		<td align="center">
-			<a href="https://www.typescriptlang.org/"><img alt="TypeScript badge" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" /></a>&nbsp;<a href="https://vitejs.dev/"><img alt="Vite badge" src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white" /></a>&nbsp;<a href="http://www.figlet.org/"><img alt="FIGlet badge" src="https://img.shields.io/badge/FIGlet-111111" /></a>
-		</td>
-		<td align="center">
-			<a href="https://code.textmode.art/"><img alt="docs badge" src="https://img.shields.io/badge/docs-vitepress-646cff?logo=vitepress&logoColor=white" /></a>&nbsp;<a href="https://discord.gg/sjrw8QXNks"><img alt="Discord badge" src="https://img.shields.io/discord/1357070706181017691?color=5865F2&label=Discord&logo=discord&logoColor=white" /></a>
-		</td>
-		<td align="center">
-			<a href="https://ko-fi.com/V7V8JG2FY"><img alt="Ko-fi badge" src="https://shields.io/badge/ko--fi-donate-ff5f5f?logo=ko-fi" /></a>&nbsp;<a href="https://github.com/sponsors/humanbydefinition"><img alt="GitHub Sponsors badge" src="https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors&logoColor=%23EA4AAA" /></a>
-		</td>
-	</tr>
-</table>
+| [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/) [![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/) | [![API](https://img.shields.io/badge/API-typedoc-3178c6?logo=typescript&logoColor=white)](https://code.textmode.art/api/textmode.figlet.js/) [![docs](https://img.shields.io/badge/docs-vitepress-646cff?logo=vitepress&logoColor=white)](https://code.textmode.art/) [![Discord](https://img.shields.io/discord/1357070706181017691?color=5865F2&label=Discord&logo=discord&logoColor=white)](https://discord.gg/sjrw8QXNks) | [![ko-fi](https://shields.io/badge/ko--fi-donate-ff5f5f?logo=ko-fi)](https://ko-fi.com/V7V8JG2FY) [![GitHub-sponsors](https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/humanbydefinition) |
+|:---|:---|:---|
 
 </div>
 
