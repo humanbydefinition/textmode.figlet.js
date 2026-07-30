@@ -50,6 +50,13 @@ Use it to load and render FIGlet fonts while you iterate on a sketch.
 Follow the [official installation guide](https://code.textmode.art/docs/installation) to install
 `textmode.figlet.js` alongside `textmode.js` with npm or browser-ready UMD bundles.
 
+## Next steps
+
+- **[Read the documentation](https://code.textmode.art/)** for core concepts and plugin workflows.
+- **[Browse the API reference](https://code.textmode.art/api/textmode.figlet.js/)** for the complete FIGfont and rendering API.
+- **[Explore the examples](./examples/)** to see font loading, layout, and rendering patterns in action.
+- **[Try the live editor](https://editor.textmode.art/)** to experiment with FIGlet text in the browser.
+
 ## Contributing
 
 Thank you for considering contributing to this project! (✿◠‿◠)
@@ -108,10 +115,6 @@ Use the measurement helpers when you need to position FIGlet text precisely befo
 
 These settings are stored in plugin-owned state per `Textmodifier` instance and apply to subsequent `figText()` calls until changed.
 
-## Next steps
-
-Visit the `textmode.js` documentation at [code.textmode.art](https://code.textmode.art/) for broader library guides and API reference, then use the local examples in this package to validate your FIGlet setup and rendering behavior.
-
 ## License
 
 `textmode.figlet.js` is licensed under the [MIT License](./LICENSE).
@@ -122,6 +125,6 @@ Visit the `textmode.js` documentation at [code.textmode.art](https://code.textmo
 
 <br />
 
-**[↑ back to top](#textmodefigletjs-%E2%80%BF)**
+**[↑ back to top](#textmodefigletjs)**
 
 </div>
