@@ -98,58 +98,6 @@ Contribution details and profile links are maintained on the [textmode.js contri
 <!-- prettier-ignore-end -->
 <!-- TEXTMODE-CONTRIBUTORS:END -->
 
-## Plugin setup
-
-```ts
-import { textmode } from 'textmode.js';
-import { FigletPlugin } from 'textmode.figlet.js';
-
-const t = textmode.create({
-	width: 800,
-	height: 600,
-	plugins: [FigletPlugin],
-});
-```
-
-Importing `textmode.figlet.js` provides the TypeScript augmentation. The plugin installs the FIGlet drawing
-and measurement API during setup and removes it again if the plugin is uninstalled.
-
-## Loading `.flf` fonts
-
-```ts
-const bulbhead = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
-
-t.figFont(bulbhead);
-
-const custom = t.parseFigFont('Custom', figFontSource);
-```
-
-Any CORS-enabled `.flf` URL works for runtime loading.
-
-## Drawing and measuring text
-
-```ts
-t.figTextAlign('center');
-t.figTextBaseline('center');
-
-t.figText('HELLO', 0, 0, {
-	horizontalLayout: 'fitted',
-});
-
-const width = t.figTextWidth('HELLO');
-const height = t.figTextHeight('HELLO');
-const bounds = t.figTextBounds('HELLO');
-```
-
-Use the measurement helpers when you need to position FIGlet text precisely before rendering it.
-
-## Alignment and baseline
-
-- `figTextAlign('left' | 'center' | 'right')`
-- `figTextBaseline('top' | 'center' | 'baseline' | 'bottom')`
-
-These settings are stored in plugin-owned state per `Textmodifier` instance and apply to subsequent `figText()` calls until changed.
-
 ## License
 
 `textmode.figlet.js` is licensed under the [MIT License](./LICENSE).
