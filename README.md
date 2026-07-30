@@ -20,15 +20,17 @@
 
 </div>
 
-`textmode.figlet.js` is an add-on library for `textmode.js` that provides FIGlet / FIGfont support. It includes a FIGfont parser, layout engine, and rendering API that integrates with the `Textmodifier` system in `textmode.js`, allowing you to draw FIGlet text with configurable layout behavior and measurement helpers.
+`textmode.figlet.js` is a free, lightweight FIGlet and FIGfont add-on for [`textmode.js`](https://github.com/humanbydefinition/textmode.js). It combines a FIGfont parser, layout engine, and rendering API with the core `Textmodifier` system, allowing sketches to load, measure, and draw large text with configurable horizontal and vertical layout behavior.
+
+The add-on is designed to make expressive FIGlet typography approachable for developers of all skill levels. Whether you're loading a FIGfont, configuring its layout, or positioning text precisely within a scene, `textmode.figlet.js` provides clear helpers for rendering, alignment, baselines, and bounds.
 
 ## Features
 
-- Parse raw `.flf` sources into reusable `TextmodeFigFont` instances
-- Load FIGfonts at runtime with `loadFigFont()`
-- Draw FIGlet text with configurable horizontal and vertical layout behavior
-- Measure rendered output with width, height, and bounds helpers before drawing
-- Store alignment and baseline preferences per `Textmodifier` instance
+- **FIGfont parsing** - Parse raw `.flf` sources into reusable `TextmodeFigFont` instances
+- **Runtime loading** - Load FIGfonts with `loadFigFont()`
+- **Configurable layout** - Draw FIGlet text with horizontal and vertical layout controls
+- **Output measurement** - Measure width, height, and bounds before drawing
+- **Per-instance preferences** - Store alignment and baseline settings on each `Textmodifier`
 
 ## Try it online first
 
