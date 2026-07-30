@@ -108,4 +108,14 @@ Visit the `textmode.js` documentation at [code.textmode.art](https://code.textmo
 
 ## License
 
-`textmode.figlet.js` is licensed under the MIT License.
+`textmode.figlet.js` is licensed under the [MIT License](./LICENSE).
+
+---
+
+<div align="center">
+
+<br />
+
+**[↑ back to top](#textmodefigletjs-%E2%80%BF)**
+
+</div>
