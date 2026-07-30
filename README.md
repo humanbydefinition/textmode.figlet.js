@@ -26,11 +26,12 @@ The add-on is designed to make expressive FIGlet typography approachable for dev
 
 ## Features
 
-- **FIGfont parsing** - Parse raw `.flf` sources into reusable `TextmodeFigFont` instances
-- **Runtime loading** - Load FIGfonts with `loadFigFont()`
-- **Configurable layout** - Draw FIGlet text with horizontal and vertical layout controls
-- **Output measurement** - Measure width, height, and bounds before drawing
-- **Per-instance preferences** - Store alignment and baseline settings on each `Textmodifier`
+- **FIGfont loading and parsing** - Load `.flf` files from URLs or parse raw data with metadata and Unicode character access
+- **Standards-aware layout** - Full-width, fitted, and smushed horizontal and vertical layouts with FIGlet smushing rules
+- **Multiline wrapping** - Explicit line breaks plus word and character wrapping within configurable column limits
+- **Bidirectional rendering** - Respect font-defined direction or explicitly render left-to-right and right-to-left text
+- **textmode-native drawing** - Draw through `Textmodifier` with alignment, baseline, and per-cell foreground/background styling
+- **Planning and measurement** - Generate render plans or grids and calculate width, height, and bounds without drawing
 
 ## Try it online first
 
@@ -67,7 +68,7 @@ Please read the [Contributing Guide](https://github.com/humanbydefinition/textmo
 
 <!-- TEXTMODE-CONTRIBUTORS:START -->
 <!-- prettier-ignore-start -->
-<!-- Generated from https://github.com/humanbydefinition/code.textmode.art/blob/main/.vitepress/data/contributors.json. Do not edit this section directly. -->
+<!-- Generated from https://github.com/humanbydefinition/code.textmode.art/blob/main/.vitepress/data/contributors.json and https://github.com/humanbydefinition/code.textmode.art/blob/main/.vitepress/data/contribution-types.json. Do not edit this section directly. -->
 ## Contributors
 
 Thanks to the people who contribute code, documentation, design, examples, ideas, infrastructure, and care
