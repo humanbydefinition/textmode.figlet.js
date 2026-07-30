@@ -1,4 +1,4 @@
-# textmode.figlet.js (✿◠‿◠)
+# textmode.figlet.js
 
 <div align="center">
 
@@ -49,6 +49,12 @@ Use it to load and render FIGlet fonts while you iterate on a sketch.
 
 Follow the [official installation guide](https://code.textmode.art/docs/installation) to install
 `textmode.figlet.js` alongside `textmode.js` with npm or browser-ready UMD bundles.
+
+## Contributing
+
+Thank you for considering contributing to this project! (✿◠‿◠)
+
+Please read the [Contributing Guide](https://github.com/humanbydefinition/textmode.js-dev/blob/dev/CONTRIBUTING.md) to get started.
 
 ## Plugin setup
 
