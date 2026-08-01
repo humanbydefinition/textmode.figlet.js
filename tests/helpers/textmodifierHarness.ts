@@ -1,4 +1,4 @@
-import type { TextmodeColor, Textmodifier } from 'textmode.js';
+import type { color, Textmodifier } from 'textmode.js';
 import { vi } from 'vitest';
 
 import { RenderState } from './RenderState';
@@ -11,6 +11,8 @@ type TestFont = {
 	_getCharacterColor: ReturnType<typeof vi.fn<(char: string) => [number, number, number]>>;
 };
 
+type TextmodeColor = color.TextmodeColor;
+
 export class MockRenderer {
 	public state = new RenderState();
 	public draws: Array<{
@@ -19,7 +21,7 @@ export class MockRenderer {
 		cellColor: [number, number, number, number];
 	}> = [];
 
-	public _rect = vi.fn(() => {
+	public _rect = vi.fn((_width: number, _height: number) => {
 		this.draws.push({
 			char: this.state._character._currentCharacterString,
 			charColor: [...this.state._character._currentCharColor] as [number, number, number, number],
