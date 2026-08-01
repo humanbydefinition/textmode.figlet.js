@@ -8,6 +8,8 @@ import type { FigTextAlign, FigTextBaseline, FigTextOptions } from '../figfont';
  * FIGlet methods added to the `textmode.js` `Textmodifier` API when
  * {@link FigletPlugin} is installed.
  *
+ * @category Textmodifier extensions
+ *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/TextmodifierFigletExtensions | TextmodifierFigletExtensions API reference}
  */
 export interface TextmodifierFigletExtensions {
