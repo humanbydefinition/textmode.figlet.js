@@ -29,6 +29,8 @@ interface ResolvedFigInputCharacter {
 /**
  * Parsed FIGfont resource used by `figText()` rendering.
  *
+ * @category FIGfont resources
+ *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont | TextmodeFigFont API reference}
  */
 export class TextmodeFigFont extends Disposable {
