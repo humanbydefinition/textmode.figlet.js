@@ -20,6 +20,8 @@ export const FIGFONT_REQUIRED_CODEPOINTS: readonly number[] = [
 /**
  * Parsed FIGfont header metadata from the `.flf` header line.
  *
+ * @category FIGfont resources
+ *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/FigFontHeader | FigFontHeader API reference}
  */
 export interface FigFontHeader {
@@ -88,6 +90,8 @@ export interface FigFontHeader {
 /**
  * A single parsed FIGcharacter from a FIGfont.
  *
+ * @category FIGfont resources
+ *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/FigCharacter | FigCharacter API reference}
  */
 export interface FigCharacter {
@@ -124,12 +128,16 @@ export interface ParsedFigFontData {
 /**
  * Supported horizontal layout modes for FIGlet rendering.
  *
+ * @category Layout and rendering
+ *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/type-aliases/FigHorizontalLayout | FigHorizontalLayout API reference}
  */
 export type FigHorizontalLayout = 'full' | 'fitted' | 'smushed';
 
 /**
  * Supported vertical layout modes for multi-line FIGlet rendering.
+ *
+ * @category Layout and rendering
  *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/type-aliases/FigVerticalLayout | FigVerticalLayout API reference}
  */
@@ -138,12 +146,16 @@ export type FigVerticalLayout = 'full' | 'fitted' | 'smushed';
 /**
  * Supported wrap modes for FIGlet text layout.
  *
+ * @category Layout and rendering
+ *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/type-aliases/FigWrapMode | FigWrapMode API reference}
  */
 export type FigWrapMode = 'none' | 'word' | 'char';
 
 /**
  * Supported print directions for FIGlet text layout.
+ *
+ * @category Layout and rendering
  *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/type-aliases/FigPrintDirection | FigPrintDirection API reference}
  */
@@ -152,17 +164,17 @@ export type FigPrintDirection = 'font' | 'ltr' | 'rtl';
 /**
  * Accepted color input for per-cell FIGlet styling.
  *
+ * @category Styling
+ *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/type-aliases/FigTextColorValue | FigTextColorValue API reference}
  */
 export type FigTextColorValue =
-	| number
-	| string
-	| color.TextmodeColor
-	| [number, number, number]
-	| [number, number, number, number];
+	number | string | color.TextmodeColor | [number, number, number] | [number, number, number, number];
 
 /**
  * Public cell metadata exposed to FIGlet styling callbacks.
+ *
+ * @category Styling
  *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/FigTextCellContext | FigTextCellContext API reference}
  */
@@ -226,12 +238,16 @@ export interface FigTextCellContext {
 /**
  * Resolver for per-cell FIGlet colors.
  *
+ * @category Styling
+ *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/type-aliases/FigTextColorResolver | FigTextColorResolver API reference}
  */
 export type FigTextColorResolver = FigTextColorValue | ((cell: FigTextCellContext) => FigTextColorValue | undefined);
 
 /**
  * Layout options for rendering FIGlet text.
+ *
+ * @category Layout and rendering
  *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/interfaces/FigTextOptions | FigTextOptions API reference}
  */
@@ -338,12 +354,16 @@ export interface FigTextResult {
 /**
  * Horizontal alignment options for `figText()` placement.
  *
+ * @category Layout and rendering
+ *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/type-aliases/FigTextAlign | FigTextAlign API reference}
  */
 export type FigTextAlign = 'left' | 'center' | 'right';
 
 /**
  * Vertical alignment options for `figText()` placement.
+ *
+ * @category Layout and rendering
  *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/type-aliases/FigTextBaseline | FigTextBaseline API reference}
  */

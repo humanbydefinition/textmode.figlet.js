@@ -25,13 +25,9 @@ describe('textmode.figlet.js public API unit', () => {
 	});
 
 	it('exposes stable public rendering and layout seams', () => {
-		expect(typeof TextmodeFigFont._fromString).toBe('function');
-		expect(typeof TextmodeFigFont._fromURL).toBe('function');
 		expect(typeof TextmodeFigFont.prototype.planText).toBe('function');
 		expect(typeof TextmodeFigFont.prototype.renderText).toBe('function');
 		expect(typeof TextmodeFigFont.prototype.measureText).toBe('function');
-		expect(typeof FigLayoutEngine.prototype._layoutHorizontal).toBe('function');
-		expect(typeof FigLayoutEngine.prototype._layoutVerticalPlan).toBe('function');
 	});
 
 	it('exposes install and uninstall hooks on the plugin export', () => {

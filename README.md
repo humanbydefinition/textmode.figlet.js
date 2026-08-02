@@ -1,166 +1,105 @@
-# textmode.figlet.js (✿◠‿◠)
+# textmode.figlet.js
 
 <div align="center">
 
-<table>
-	<tr>
-		<td align="center">
-			<a href="https://www.typescriptlang.org/"><img alt="TypeScript badge" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" /></a>&nbsp;<a href="https://vitejs.dev/"><img alt="Vite badge" src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white" /></a>&nbsp;<a href="http://www.figlet.org/"><img alt="FIGlet badge" src="https://img.shields.io/badge/FIGlet-111111" /></a>
-		</td>
-		<td align="center">
-			<a href="https://code.textmode.art/"><img alt="docs badge" src="https://img.shields.io/badge/docs-vitepress-646cff?logo=vitepress&logoColor=white" /></a>&nbsp;<a href="https://discord.gg/sjrw8QXNks"><img alt="Discord badge" src="https://img.shields.io/discord/1357070706181017691?color=5865F2&label=Discord&logo=discord&logoColor=white" /></a>
-		</td>
-		<td align="center">
-			<a href="https://ko-fi.com/V7V8JG2FY"><img alt="Ko-fi badge" src="https://shields.io/badge/ko--fi-donate-ff5f5f?logo=ko-fi" /></a>&nbsp;<a href="https://github.com/sponsors/humanbydefinition"><img alt="GitHub Sponsors badge" src="https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors&logoColor=%23EA4AAA" /></a>
-		</td>
-	</tr>
-</table>
+<img alt="textmode.figlet.js — draw FIGlet in textmode" src=".github/assets/readme-og.png" />
+
+| [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/) [![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/) | [![API](https://img.shields.io/badge/API-typedoc-3178c6?logo=typescript&logoColor=white)](https://code.textmode.art/api/textmode.figlet.js/) [![docs](https://img.shields.io/badge/docs-vitepress-646cff?logo=vitepress&logoColor=white)](https://code.textmode.art/) [![Discord](https://img.shields.io/discord/1357070706181017691?color=5865F2&label=Discord&logo=discord&logoColor=white)](https://discord.gg/sjrw8QXNks) | [![ko-fi](https://shields.io/badge/ko--fi-donate-ff5f5f?logo=ko-fi)](https://ko-fi.com/V7V8JG2FY) [![GitHub-sponsors](https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/humanbydefinition) |
+|:---|:---|:---|
 
 </div>
 
-`textmode.figlet.js` is an add-on library for `textmode.js` that provides FIGlet / FIGfont support. It includes a FIGfont parser, layout engine, and rendering API that integrates with the `Textmodifier` system in `textmode.js`, allowing you to draw FIGlet text with configurable layout behavior and measurement helpers.
+`textmode.figlet.js` is a FIGlet and FIGfont add-on for [`textmode.js`](https://github.com/humanbydefinition/textmode.js) for giving a sketch bold display typography. Its FIGfont parser, layout engine, and rendering API work with the core `Textmodifier` system to load, measure, and draw large text with configurable horizontal and vertical layout behavior.
+
+FIGlet text needs more than a font file: fitting, smushing, direction, and placement all shape the final composition. Whether you are setting those rules or positioning a title precisely within a scene, `textmode.figlet.js` provides clear helpers for rendering, alignment, baselines, and bounds.
 
 ## Features
 
-- Parse raw `.flf` sources into reusable `TextmodeFigFont` instances
-- Load FIGfonts at runtime with `loadFigFont()`
-- Draw FIGlet text with configurable horizontal and vertical layout behavior
-- Measure rendered output with width, height, and bounds helpers before drawing
-- Store alignment and baseline preferences per `Textmodifier` instance
+- **FIGfont loading and parsing** - Load `.flf` files from URLs or parse raw data with metadata and Unicode character access
+- **Standards-aware layout** - Full-width, fitted, and smushed horizontal and vertical layouts with FIGlet smushing rules
+- **Multiline wrapping** - Explicit line breaks plus word and character wrapping within configurable column limits
+- **Bidirectional rendering** - Respect font-defined direction or explicitly render left-to-right and right-to-left text
+- **textmode-native drawing** - Draw through `Textmodifier` with alignment, baseline, and per-cell foreground/background styling
+- **Planning and measurement** - Generate render plans or grids and calculate width, height, and bounds without drawing
+
+## Try it online first
+
+Open [editor.textmode.art](https://editor.textmode.art/), a browser-based live-coding environment for the
+complete official `textmode.js` ecosystem. Sketches run as you edit, with no local toolchain required.
+
+The editor includes `textmode.js` and all four official add-ons: `textmode.export.js`, `textmode.filters.js`,
+`textmode.figlet.js`, and `textmode.synth.js`.
+
+- Write with Monaco-powered completions, hover documentation, and diagnostics.
+- Start with a blank sketch, an included example, or a community gallery sketch.
+- Keep code and preferences saved in the browser, then share sketches through URL-based links.
+- Use microphone or line-input analysis for audio-reactive work, and create on desktop or mobile.
+
+Use it to load and render FIGlet fonts while you iterate on a sketch.
 
 ## Installation
 
-### Prerequisites
-
-To get started with `textmode.figlet.js`, you'll need:
-
-- `textmode.js` `0.11.0` or newer
-- A modern browser with the same runtime requirements as `textmode.js`
-- Node.js `20.8.1+` and `npm` (optional, for ESM installation)
-
-### UMD
-
-To use `textmode.figlet.js` in a browser without a bundler, load the UMD builds for both `textmode.js` and this add-on. `textmode.js` must be loaded first so the FIGlet add-on can attach to the expected global runtime.
-
-```html
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<title>textmode.figlet.js sketch</title>
-
-		<script src="https://cdn.jsdelivr.net/npm/textmode.js@latest/dist/textmode.umd.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/textmode.figlet.js@latest/dist/textmode.figlet.umd.js"></script>
-	</head>
-	<body>
-		<script src="./sketch.js"></script>
-	</body>
-</html>
-```
-
-```js
-const t = textmode.create({
-	width: window.innerWidth,
-	height: window.innerHeight,
-	fontSize: 16,
-	plugins: [FigletPlugin],
-});
-
-t.setup(async () => {
-	const bulbhead = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
-
-	t.figFont(bulbhead);
-	t.figTextAlign('center');
-	t.figTextBaseline('center');
-});
-
-t.draw(() => {
-	t.background(8, 12, 24);
-	t.charColor(255, 220, 120);
-	t.figText('FIGLET', 0, 0, {
-		horizontalLayout: 'fitted',
-	});
-});
-
-t.windowResized(() => {
-	t.resizeCanvas(window.innerWidth, window.innerHeight);
-});
-```
-
-The UMD bundle exposes `FigletPlugin` globally, along with the other runtime exports such as `TextmodeFigFont` and `FigFontParser`.
-
-### ESM
-
-Install the core library and the FIGlet add-on together:
-
-```bash
-npm install textmode.js textmode.figlet.js
-```
-
-Then import both packages in your sketch or application code:
-
-```ts
-import { textmode } from 'textmode.js';
-import { FigletPlugin } from 'textmode.figlet.js';
-```
-
-Importing `textmode.figlet.js` provides the TypeScript augmentation. Installing `FigletPlugin` enables the runtime FIGlet methods on that `Textmodifier` instance.
-
-## Plugin setup
-
-```ts
-import { textmode } from 'textmode.js';
-import { FigletPlugin } from 'textmode.figlet.js';
-
-const t = textmode.create({
-	width: 800,
-	height: 600,
-	plugins: [FigletPlugin],
-});
-```
-
-The plugin installs the FIGlet drawing and measurement API during setup and removes it again if the plugin is uninstalled.
-
-## Loading `.flf` fonts
-
-```ts
-const bulbhead = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
-
-t.figFont(bulbhead);
-
-const custom = t.parseFigFont('Custom', figFontSource);
-```
-
-Any CORS-enabled `.flf` URL works for runtime loading.
-
-## Drawing and measuring text
-
-```ts
-t.figTextAlign('center');
-t.figTextBaseline('center');
-
-t.figText('HELLO', 0, 0, {
-	horizontalLayout: 'fitted',
-});
-
-const width = t.figTextWidth('HELLO');
-const height = t.figTextHeight('HELLO');
-const bounds = t.figTextBounds('HELLO');
-```
-
-Use the measurement helpers when you need to position FIGlet text precisely before rendering it.
-
-## Alignment and baseline
-
-- `figTextAlign('left' | 'center' | 'right')`
-- `figTextBaseline('top' | 'center' | 'baseline' | 'bottom')`
-
-These settings are stored in plugin-owned state per `Textmodifier` instance and apply to subsequent `figText()` calls until changed.
+Follow the [official installation guide](https://code.textmode.art/docs/installation) to install
+`textmode.figlet.js` alongside `textmode.js` with npm or browser-ready UMD bundles.
 
 ## Next steps
 
-Visit the `textmode.js` documentation at [code.textmode.art](https://code.textmode.art/) for broader library guides and API reference, then use the local examples in this package to validate your FIGlet setup and rendering behavior.
+- **[Read the documentation](https://code.textmode.art/)** for core concepts and plugin workflows.
+- **[Browse the API reference](https://code.textmode.art/api/textmode.figlet.js/)** for the complete FIGfont and rendering API.
+- **[Explore the examples](./examples/)** to see font loading, layout, and rendering patterns in action.
+- **[Try the live editor](https://editor.textmode.art/)** to experiment with FIGlet text in the browser.
+
+## Contributing
+
+Thank you for considering contributing to this project! (✿◠‿◠)
+
+Please read the [Contributing Guide](./CONTRIBUTING.md) to get started.
+
+<!-- TEXTMODE-CONTRIBUTORS:START -->
+<!-- prettier-ignore-start -->
+<!-- Generated from https://github.com/humanbydefinition/code.textmode.art/blob/main/.vitepress/data/contributors.json and https://github.com/humanbydefinition/code.textmode.art/blob/main/.vitepress/data/contribution-types.json. Do not edit this section directly. -->
+## Contributors
+
+Thanks to the people who contribute code, documentation, design, examples, ideas, infrastructure, and care
+across the textmode.js ecosystem.
+
+<!-- markdownlint-disable MD033 -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%">
+        <a href="https://github.com/humanbydefinition">
+          <img src="https://github.com/humanbydefinition.png?s=100" width="100px" alt="humanbydefinition avatar" />
+          <br /><sub><b>humanbydefinition</b></sub>
+        </a>
+        <br /><span title="Code: Commits and pull requests" aria-label="Code: Commits and pull requests">💻</span> <span title="Documentation: README, guides, and API documentation" aria-label="Documentation: README, guides, and API documentation">📖</span> <span title="Design: User experience, branding, and visual design" aria-label="Design: User experience, branding, and visual design">🎨</span> <span title="Examples: Usage examples and creative sketches" aria-label="Examples: Usage examples and creative sketches">💡</span> <span title="Ideas and planning: Feature proposals, planning, and feedback" aria-label="Ideas and planning: Feature proposals, planning, and feedback">🤔</span> <span title="Maintenance: Refactoring and project upkeep" aria-label="Maintenance: Refactoring and project upkeep">🚧</span> <span title="Infrastructure: Continuous integration, hosting, and build systems" aria-label="Infrastructure: Continuous integration, hosting, and build systems">🚇</span> <span title="Tools: Developer and community tooling" aria-label="Tools: Developer and community tooling">🔧</span> <span title="Plugins and libraries: Plugin and utility library development" aria-label="Plugins and libraries: Plugin and utility library development">🔌</span> <span title="Code review: Reviewing pull requests" aria-label="Code review: Reviewing pull requests">👀</span>
+      </td>
+      <td align="center" valign="top" width="14.28%">
+        <a href="https://github.com/trintlermint">
+          <img src="https://github.com/trintlermint.png?s=100" width="100px" alt="trintlermint avatar" />
+          <br /><sub><b>trintlermint</b></sub>
+        </a>
+        <br /><span title="Design: User experience, branding, and visual design" aria-label="Design: User experience, branding, and visual design">🎨</span> <span title="Examples: Usage examples and creative sketches" aria-label="Examples: Usage examples and creative sketches">💡</span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<!-- markdownlint-enable MD033 -->
+
+Contribution details and profile links are maintained on the [textmode.js contributors page](https://code.textmode.art/docs/contributors).
+<!-- prettier-ignore-end -->
+<!-- TEXTMODE-CONTRIBUTORS:END -->
 
 ## License
 
-`textmode.figlet.js` is licensed under the MIT License.
+`textmode.figlet.js` is licensed under the [MIT License](./LICENSE).
+
+---
+
+<div align="center">
+
+<br />
+
+**[↑ back to top](#textmodefigletjs)**
+
+</div>
