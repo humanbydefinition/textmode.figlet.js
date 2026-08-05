@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TextmodeFigFont } from '../../../src/figfont';
-import type { FigCharacter, FigFontHeader } from '../../../src/figfont';
+import type { FigCharacter } from '../../../src/figfont';
 import { buildSingleWidthFigFont, readFigFontFixture } from '../../fixtures/builders/figFontBuilder';
 
 const fontData = readFigFontFixture('minimal.flf');

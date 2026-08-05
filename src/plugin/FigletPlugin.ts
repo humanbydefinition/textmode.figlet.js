@@ -7,6 +7,8 @@ import { installTextmodifierFigletExtensions, uninstallTextmodifierFigletExtensi
 /**
  * Plugin entrypoint for the FIGlet add-on.
  *
+ * @category Workflow
+ *
  * @example
  * {@includeCode ../../examples/FigletPlugin/init/sketch.js}
  *
