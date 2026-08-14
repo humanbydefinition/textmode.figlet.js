@@ -4,11 +4,6 @@ import type { FigTextAlign, FigTextBaseline } from '../figfont';
 import type { TextmodeFigFont } from '../figfont';
 
 /**
- * Symbol used to store per-instance FIGlet plugin state.
- */
-export const FIGLET_STATE_KEY = Symbol.for('textmode.figlet.state');
-
-/**
  * Per-textmodifier FIGlet plugin state.
  */
 export interface FigletPluginState {
@@ -17,6 +12,8 @@ export interface FigletPluginState {
 	baseline: FigTextBaseline;
 }
 
+const states = new WeakMap<Textmodifier, FigletPluginState>();
+
 /**
  * Get the FIGlet plugin state for a Textmodifier instance, creating it when missing.
  *
@@ -24,19 +21,16 @@ export interface FigletPluginState {
  * @returns Mutable FIGlet plugin state for that instance.
  */
 export function getFigletState(textmodifier: Textmodifier): FigletPluginState {
-	const textmodifierWithState = textmodifier as Textmodifier & {
-		[FIGLET_STATE_KEY]?: FigletPluginState;
-	};
-
-	if (!textmodifierWithState[FIGLET_STATE_KEY]) {
-		textmodifierWithState[FIGLET_STATE_KEY] = {
+	let state = states.get(textmodifier);
+	if (!state) {
+		state = {
 			activeFont: undefined,
 			align: 'left',
 			baseline: 'baseline',
 		};
+		states.set(textmodifier, state);
 	}
-
-	return textmodifierWithState[FIGLET_STATE_KEY];
+	return state;
 }
 
 /**
@@ -45,5 +39,5 @@ export function getFigletState(textmodifier: Textmodifier): FigletPluginState {
  * @param textmodifier Target instance.
  */
 export function clearFigletState(textmodifier: Textmodifier): void {
-	delete (textmodifier as Textmodifier & { [FIGLET_STATE_KEY]?: FigletPluginState })[FIGLET_STATE_KEY];
+	states.delete(textmodifier);
 }

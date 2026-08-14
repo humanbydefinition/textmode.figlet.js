@@ -1,9 +1,9 @@
-import type { Textmodifier } from 'textmode.js';
+import type { TextmodePluginContext, Textmodifier } from 'textmode.js';
 import { color } from 'textmode.js';
 
 import { TextmodeFigFont } from '../figfont';
 import { FigletError } from '../error/FigletError';
-import { clearFigletState, getFigletState } from '../state/figletState';
+import { getFigletState } from '../state/figletState';
 
 import type {
 	FigRenderCell,
@@ -13,18 +13,6 @@ import type {
 	FigTextColorValue,
 	FigTextOptions,
 } from '../figfont';
-
-const TEXTMODIFIER_EXTENSION_NAMES = [
-	'loadFigFont',
-	'parseFigFont',
-	'figFont',
-	'figText',
-	'figTextWidth',
-	'figTextHeight',
-	'figTextBounds',
-	'figTextAlign',
-	'figTextBaseline',
-] as const;
 
 type DisposableTracker = Textmodifier & {
 	_trackDisposable?: (disposable: TextmodeFigFont) => void;
@@ -122,47 +110,47 @@ function trackDisposable(textmodifier: Textmodifier, figFont: TextmodeFigFont): 
 	(textmodifier as DisposableTracker)._trackDisposable?.(figFont);
 }
 
-function defineInstanceMethod(textmodifier: Textmodifier, methodName: string, implementation: unknown): void {
-	Object.defineProperty(textmodifier, methodName, {
-		value: implementation,
-		writable: true,
-		configurable: true,
-		enumerable: false,
-	});
-}
-
 /**
  * Install FIGlet Textmodifier extensions on a specific `Textmodifier` instance.
  *
- * @param textmodifier Target instance.
+ * Methods are registered through {@link TextmodePluginContext.defineExtension} so the
+ * plugin runtime handles conflict detection and uninstall cleanup uniformly. The
+ * extension properties are defined as instance own-properties and are removed by the
+ * host when the plugin is uninstalled.
+ *
+ * @param api The textmode.js plugin context.
  */
-export function installTextmodifierFigletExtensions(textmodifier: Textmodifier): void {
-	defineInstanceMethod(textmodifier, 'loadFigFont', async function (this: Textmodifier, source: string | URL) {
-		const figFont = await TextmodeFigFont._fromURL(source);
-		trackDisposable(this, figFont);
-		return figFont;
+export function installTextmodifierFigletExtensions(api: TextmodePluginContext): void {
+	api.defineExtension('textmodifier', 'loadFigFont', {
+		value: async function (this: Textmodifier, source: string | URL) {
+			const figFont = await TextmodeFigFont._fromURL(source);
+			trackDisposable(this, figFont);
+			return figFont;
+		},
 	});
 
-	defineInstanceMethod(textmodifier, 'parseFigFont', function (this: Textmodifier, name: string, data: string) {
-		const figFont = TextmodeFigFont._fromString(name, data);
-		trackDisposable(this, figFont);
-		return figFont;
+	api.defineExtension('textmodifier', 'parseFigFont', {
+		value: function (this: Textmodifier, name: string, data: string) {
+			const figFont = TextmodeFigFont._fromString(name, data);
+			trackDisposable(this, figFont);
+			return figFont;
+		},
 	});
 
-	defineInstanceMethod(textmodifier, 'figFont', function (this: Textmodifier, font?: TextmodeFigFont) {
-		const state = getFigletState(this);
+	api.defineExtension('textmodifier', 'figFont', {
+		value: function (this: Textmodifier, font?: TextmodeFigFont) {
+			const state = getFigletState(this);
 
-		if (font === undefined) {
-			return state.activeFont;
-		}
+			if (font === undefined) {
+				return state.activeFont;
+			}
 
-		state.activeFont = font;
+			state.activeFont = font;
+		},
 	});
 
-	defineInstanceMethod(
-		textmodifier,
-		'figText',
-		function (this: Textmodifier, text: string, col: number, row: number, options: FigTextOptions = {}) {
+	api.defineExtension('textmodifier', 'figText', {
+		value: function (this: Textmodifier, text: string, col: number, row: number, options: FigTextOptions = {}) {
 			const figFont = getActiveFigFont(this);
 			const plan = figFont.planText(text, options);
 			const state = getFigletState(this);
@@ -195,63 +183,48 @@ export function installTextmodifierFigletExtensions(textmodifier: Textmodifier):
 			}
 
 			this.pop();
-		}
-	);
+		},
+	});
 
-	defineInstanceMethod(
-		textmodifier,
-		'figTextWidth',
-		function (this: Textmodifier, text: string, options: FigTextOptions = {}) {
+	api.defineExtension('textmodifier', 'figTextWidth', {
+		value: function (this: Textmodifier, text: string, options: FigTextOptions = {}) {
 			return getActiveFigFont(this).measureText(text, options).cols;
-		}
-	);
+		},
+	});
 
-	defineInstanceMethod(
-		textmodifier,
-		'figTextHeight',
-		function (this: Textmodifier, text: string, options: FigTextOptions = {}) {
+	api.defineExtension('textmodifier', 'figTextHeight', {
+		value: function (this: Textmodifier, text: string, options: FigTextOptions = {}) {
 			return getActiveFigFont(this).measureText(text, options).rows;
-		}
-	);
+		},
+	});
 
-	defineInstanceMethod(
-		textmodifier,
-		'figTextBounds',
-		function (this: Textmodifier, text: string, options: FigTextOptions = {}) {
+	api.defineExtension('textmodifier', 'figTextBounds', {
+		value: function (this: Textmodifier, text: string, options: FigTextOptions = {}) {
 			return getActiveFigFont(this).measureText(text, options);
-		}
-	);
-
-	defineInstanceMethod(textmodifier, 'figTextAlign', function (this: Textmodifier, align?: FigTextAlign) {
-		const state = getFigletState(this);
-
-		if (align === undefined) {
-			return state.align;
-		}
-
-		state.align = align;
+		},
 	});
 
-	defineInstanceMethod(textmodifier, 'figTextBaseline', function (this: Textmodifier, baseline?: FigTextBaseline) {
-		const state = getFigletState(this);
+	api.defineExtension('textmodifier', 'figTextAlign', {
+		value: function (this: Textmodifier, align?: FigTextAlign) {
+			const state = getFigletState(this);
 
-		if (baseline === undefined) {
-			return state.baseline;
-		}
+			if (align === undefined) {
+				return state.align;
+			}
 
-		state.baseline = baseline;
+			state.align = align;
+		},
 	});
-}
 
-/**
- * Remove FIGlet Textmodifier extensions from a specific `Textmodifier` instance.
- *
- * @param textmodifier Target instance.
- */
-export function uninstallTextmodifierFigletExtensions(textmodifier: Textmodifier): void {
-	for (const methodName of TEXTMODIFIER_EXTENSION_NAMES) {
-		delete (textmodifier as unknown as Record<string, unknown>)[methodName];
-	}
+	api.defineExtension('textmodifier', 'figTextBaseline', {
+		value: function (this: Textmodifier, baseline?: FigTextBaseline) {
+			const state = getFigletState(this);
 
-	clearFigletState(textmodifier);
+			if (baseline === undefined) {
+				return state.baseline;
+			}
+
+			state.baseline = baseline;
+		},
+	});
 }
