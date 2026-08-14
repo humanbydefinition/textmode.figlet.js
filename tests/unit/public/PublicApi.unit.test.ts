@@ -31,8 +31,10 @@ describe('textmode.figlet.js public API unit', () => {
 	});
 
 	it('exposes install and uninstall hooks on the plugin export', () => {
-		expect(() => FigletPlugin.install({} as never, {} as never)).not.toThrow();
-		expect(() => FigletPlugin.uninstall?.({} as never, {} as never)).not.toThrow();
+		const context = { defineExtension: () => () => {} } as never;
+
+		expect(() => FigletPlugin.install({} as never, context)).not.toThrow();
+		expect(() => FigletPlugin.uninstall?.({} as never, context)).not.toThrow();
 	});
 
 	it('registers the runtime package exports on window for UMD consumers', () => {
