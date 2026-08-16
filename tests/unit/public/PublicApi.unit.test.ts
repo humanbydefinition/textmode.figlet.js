@@ -38,13 +38,11 @@ describe('textmode.figlet.js public API unit', () => {
 	});
 
 	it('registers the runtime package exports on window for UMD consumers', () => {
-		const umdGlobals = window as typeof window & Record<string, unknown>;
-
-		expect(umdGlobals.FigletPlugin).toBe(FigletPlugin);
-		expect(umdGlobals.TextmodeFigFont).toBe(TextmodeFigFont);
-		expect(umdGlobals.FigFontParser).toBe(FigFontParser);
-		expect(umdGlobals.FigLayoutEngine).toBe(FigLayoutEngine);
-		expect(umdGlobals.FigSmushRules).toBe(FigSmushRules);
-		expect(umdGlobals.FIGFONT_REQUIRED_CODEPOINTS).toBe(FIGFONT_REQUIRED_CODEPOINTS);
+		expect(window.FigletPlugin).toBe(FigletPlugin);
+		expect(window.TextmodeFigFont).toBe(TextmodeFigFont);
+		expect(window.FigFontParser).toBe(FigFontParser);
+		expect(window.FigLayoutEngine).toBe(FigLayoutEngine);
+		expect(window.FigSmushRules).toBe(FigSmushRules);
+		expect(window.FIGFONT_REQUIRED_CODEPOINTS).toBe(FIGFONT_REQUIRED_CODEPOINTS);
 	});
 });
