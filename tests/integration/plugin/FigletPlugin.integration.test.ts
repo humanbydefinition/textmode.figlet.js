@@ -37,6 +37,7 @@ describe('FigletPlugin integration', () => {
 	let stub: TextmodifierHarness;
 	let context: TextmodePluginContext;
 	let uninstallExtensions: () => void;
+	let pluginCleanup: (() => void) | undefined;
 	let figFont: TextmodeFigFont;
 
 	beforeEach(() => {
@@ -45,11 +46,11 @@ describe('FigletPlugin integration', () => {
 		context = pluginContext.context;
 		uninstallExtensions = pluginContext.uninstallExtensions;
 		figFont = TextmodeFigFont._fromString('fixture', fontData);
-		FigletPlugin.install(stub, context);
+		pluginCleanup = FigletPlugin.install(stub, context) as unknown as (() => void) | undefined;
 	});
 
 	afterEach(() => {
-		FigletPlugin.uninstall?.(stub, context);
+		pluginCleanup?.();
 		uninstallExtensions();
 		vi.restoreAllMocks();
 	});
@@ -251,13 +252,13 @@ describe('FigletPlugin integration', () => {
 	});
 
 	it('removes installed methods when the host uninstalls extensions', () => {
-		FigletPlugin.uninstall?.(stub, context);
+		pluginCleanup?.();
 		uninstallExtensions();
 
 		expect(stub.figText).toBeUndefined();
 		expect(stub.figFont).toBeUndefined();
 		expect(stub.loadFigFont).toBeUndefined();
 
-		FigletPlugin.install(stub, context);
+		pluginCleanup = FigletPlugin.install(stub, context) as unknown as (() => void) | undefined;
 	});
 });
