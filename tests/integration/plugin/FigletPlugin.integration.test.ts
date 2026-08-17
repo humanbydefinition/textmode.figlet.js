@@ -46,7 +46,7 @@ describe('FigletPlugin integration', () => {
 		context = pluginContext.context;
 		uninstallExtensions = pluginContext.uninstallExtensions;
 		figFont = TextmodeFigFont._fromString('fixture', fontData);
-		pluginCleanup = FigletPlugin.install(stub, context) as unknown as (() => void) | undefined;
+		pluginCleanup = FigletPlugin.install(stub, context) ?? undefined;
 	});
 
 	afterEach(() => {
@@ -259,6 +259,6 @@ describe('FigletPlugin integration', () => {
 		expect(stub.figFont).toBeUndefined();
 		expect(stub.loadFigFont).toBeUndefined();
 
-		pluginCleanup = FigletPlugin.install(stub, context) as unknown as (() => void) | undefined;
+		pluginCleanup = FigletPlugin.install(stub, context) ?? undefined;
 	});
 });
