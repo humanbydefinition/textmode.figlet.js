@@ -43,6 +43,8 @@
 
 import './augmentations';
 
+import type { TextmodePlugin } from 'textmode.js';
+
 import { FIGFONT_REQUIRED_CODEPOINTS, FigFontParser, FigLayoutEngine, FigSmushRules, TextmodeFigFont } from './figfont';
 import { FigletPlugin } from './plugin';
 
@@ -50,13 +52,22 @@ export { FigletPlugin } from './plugin';
 export type { TextmodifierFigletExtensions } from './augmentations';
 export * from './figfont';
 
-if (typeof window !== 'undefined') {
-	const umdGlobals = window as typeof window & Record<string, unknown>;
+declare global {
+	interface Window {
+		FigletPlugin?: TextmodePlugin;
+		TextmodeFigFont?: typeof TextmodeFigFont;
+		FigFontParser?: typeof FigFontParser;
+		FigLayoutEngine?: typeof FigLayoutEngine;
+		FigSmushRules?: typeof FigSmushRules;
+		FIGFONT_REQUIRED_CODEPOINTS?: typeof FIGFONT_REQUIRED_CODEPOINTS;
+	}
+}
 
-	umdGlobals.FigletPlugin = FigletPlugin;
-	umdGlobals.TextmodeFigFont = TextmodeFigFont;
-	umdGlobals.FigFontParser = FigFontParser;
-	umdGlobals.FigLayoutEngine = FigLayoutEngine;
-	umdGlobals.FigSmushRules = FigSmushRules;
-	umdGlobals.FIGFONT_REQUIRED_CODEPOINTS = FIGFONT_REQUIRED_CODEPOINTS;
+if (typeof window !== 'undefined') {
+	window.FigletPlugin = FigletPlugin;
+	window.TextmodeFigFont = TextmodeFigFont;
+	window.FigFontParser = FigFontParser;
+	window.FigLayoutEngine = FigLayoutEngine;
+	window.FigSmushRules = FigSmushRules;
+	window.FIGFONT_REQUIRED_CODEPOINTS = FIGFONT_REQUIRED_CODEPOINTS;
 }

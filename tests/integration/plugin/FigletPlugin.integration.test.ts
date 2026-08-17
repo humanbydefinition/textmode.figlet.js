@@ -1,25 +1,57 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { TextmodePluginContext } from 'textmode.js';
+
 import { RenderState } from '../../helpers/RenderState';
-import { createTextmodifierHarness } from '../../helpers/textmodifierHarness';
+import { createTextmodifierHarness, type TextmodifierHarness } from '../../helpers/textmodifierHarness';
 import { readFigFontFixture } from '../../fixtures/builders/figFontBuilder';
 
 import { FigletPlugin, TextmodeFigFont } from '../../../src';
 
 const fontData = readFigFontFixture('layout-edge-cases.flf');
 
+function createFigletPluginContext(stub: TextmodifierHarness) {
+	const unregisterFns: Array<() => void> = [];
+
+	const context = {
+		defineExtension: vi.fn((_target: string, name: string, descriptor: PropertyDescriptor) => {
+			Object.defineProperty(stub, name, { ...descriptor, configurable: true });
+
+			const unregister = () => {
+				delete (stub as unknown as Record<string, unknown>)[name];
+			};
+			unregisterFns.push(unregister);
+			return unregister;
+		}),
+	} as unknown as TextmodePluginContext;
+
+	return {
+		context,
+		uninstallExtensions: () => {
+			for (const unregister of unregisterFns) unregister();
+		},
+	};
+}
+
 describe('FigletPlugin integration', () => {
-	let stub = createTextmodifierHarness();
+	let stub: TextmodifierHarness;
+	let context: TextmodePluginContext;
+	let uninstallExtensions: () => void;
+	let pluginCleanup: (() => void) | undefined;
 	let figFont: TextmodeFigFont;
 
 	beforeEach(() => {
 		stub = createTextmodifierHarness();
+		const pluginContext = createFigletPluginContext(stub);
+		context = pluginContext.context;
+		uninstallExtensions = pluginContext.uninstallExtensions;
 		figFont = TextmodeFigFont._fromString('fixture', fontData);
-		FigletPlugin.install(stub, {} as never);
+		pluginCleanup = FigletPlugin.install(stub, context) ?? undefined;
 	});
 
 	afterEach(() => {
-		FigletPlugin.uninstall?.(stub, {} as never);
+		pluginCleanup?.();
+		uninstallExtensions();
 		vi.restoreAllMocks();
 	});
 
@@ -203,13 +235,30 @@ describe('FigletPlugin integration', () => {
 		expect(() => stub.figTextWidth('AB')).toThrow('No FIGlet font is active');
 	});
 
-	it('removes installed methods on uninstall', () => {
-		FigletPlugin.uninstall?.(stub, {} as never);
+	it('registers all FIGlet methods through defineExtension', () => {
+		for (const name of [
+			'loadFigFont',
+			'parseFigFont',
+			'figFont',
+			'figText',
+			'figTextWidth',
+			'figTextHeight',
+			'figTextBounds',
+			'figTextAlign',
+			'figTextBaseline',
+		]) {
+			expect(vi.mocked(context.defineExtension)).toHaveBeenCalledWith('textmodifier', name, expect.any(Object));
+		}
+	});
+
+	it('removes installed methods when the host uninstalls extensions', () => {
+		pluginCleanup?.();
+		uninstallExtensions();
 
 		expect(stub.figText).toBeUndefined();
 		expect(stub.figFont).toBeUndefined();
 		expect(stub.loadFigFont).toBeUndefined();
 
-		FigletPlugin.install(stub, {} as never);
+		pluginCleanup = FigletPlugin.install(stub, context) ?? undefined;
 	});
 });
