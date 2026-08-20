@@ -3,7 +3,7 @@ import { color } from 'textmode.js';
 
 import { TextmodeFigFont } from '../figfont';
 import { FigletError } from '../error/FigletError';
-import { getFigletState } from '../state/figletState';
+import { assertFigletStateLive, trackFont, type FigletPluginState } from '../state/figletState';
 
 import type {
 	FigRenderCell,
@@ -13,10 +13,6 @@ import type {
 	FigTextColorValue,
 	FigTextOptions,
 } from '../figfont';
-
-type DisposableTracker = Textmodifier & {
-	_trackDisposable?: (disposable: TextmodeFigFont) => void;
-};
 
 function resolveColor(value: FigTextColorResolver | undefined, cell: FigRenderCell): FigTextColorValue | undefined {
 	if (value === undefined) {
@@ -69,8 +65,8 @@ function applyResolvedColor(
 	textmodifier.cellColor(value[0], value[1], value[2]);
 }
 
-function getActiveFigFont(textmodifier: Textmodifier): TextmodeFigFont {
-	const font = getFigletState(textmodifier).activeFont;
+function getActiveFigFont(state: FigletPluginState): TextmodeFigFont {
+	const font = state.activeFont;
 	if (!font) {
 		throw new FigletError('No FIGlet font is active. Call figFont() first.');
 	}
@@ -106,10 +102,6 @@ function getVerticalOffset(rows: number, baseline: number, mode: FigTextBaseline
 	return -(baseline - 1);
 }
 
-function trackDisposable(textmodifier: Textmodifier, figFont: TextmodeFigFont): void {
-	(textmodifier as DisposableTracker)._trackDisposable?.(figFont);
-}
-
 /**
  * Install FIGlet Textmodifier extensions on a specific `Textmodifier` instance.
  *
@@ -120,27 +112,34 @@ function trackDisposable(textmodifier: Textmodifier, figFont: TextmodeFigFont): 
  *
  * @param api The textmode.js plugin context.
  */
-export function installTextmodifierFigletExtensions(api: TextmodePluginContext): void {
+export function installTextmodifierFigletExtensions(api: TextmodePluginContext, state: FigletPluginState): void {
 	api.defineExtension('textmodifier', 'loadFigFont', {
 		value: async function (this: Textmodifier, source: string | URL) {
+			assertFigletStateLive(state);
 			const figFont = await TextmodeFigFont._fromURL(source);
-			trackDisposable(this, figFont);
-			return figFont;
+			try {
+				return trackFont(state, figFont);
+			} catch (error) {
+				figFont.dispose();
+				throw error;
+			}
 		},
 	});
 
 	api.defineExtension('textmodifier', 'parseFigFont', {
 		value: function (this: Textmodifier, name: string, data: string) {
 			const figFont = TextmodeFigFont._fromString(name, data);
-			trackDisposable(this, figFont);
-			return figFont;
+			try {
+				return trackFont(state, figFont);
+			} catch (error) {
+				figFont.dispose();
+				throw error;
+			}
 		},
 	});
 
 	api.defineExtension('textmodifier', 'figFont', {
 		value: function (this: Textmodifier, font?: TextmodeFigFont) {
-			const state = getFigletState(this);
-
 			if (font === undefined) {
 				return state.activeFont;
 			}
@@ -151,63 +150,60 @@ export function installTextmodifierFigletExtensions(api: TextmodePluginContext):
 
 	api.defineExtension('textmodifier', 'figText', {
 		value: function (this: Textmodifier, text: string, col: number, row: number, options: FigTextOptions = {}) {
-			const figFont = getActiveFigFont(this);
+			const figFont = getActiveFigFont(state);
 			const plan = figFont.planText(text, options);
-			const state = getFigletState(this);
 			const startCol = col + getHorizontalOffset(plan.cols, state.align);
 			const startRow = row + getVerticalOffset(plan.rows, figFont.baseline, state.baseline);
 
 			this.push();
-			this.translate(startCol, startRow, 0);
+			try {
+				this.translate(startCol, startRow, 0);
 
-			for (const cell of plan.cells) {
-				this.push();
-				this.translate(cell.col, cell.row, 0);
-				const charColor = resolveColor(options.charColor, cell);
-				const cellColor = resolveColor(options.cellColor, cell);
+				for (const cell of plan.cells) {
+					this.push();
+					try {
+						this.translate(cell.col, cell.row, 0);
+						const charColor = resolveColor(options.charColor, cell);
+						const cellColor = resolveColor(options.cellColor, cell);
 
-				this.char(cell.char);
+						this.char(cell.char);
 
-				// Apply per-cell overrides after selecting the glyph so the emitted draw
-				// uses the requested colors regardless of the runtime's internal ordering.
-				if (charColor !== undefined) {
-					applyResolvedColor(this, 'charColor', charColor);
+						// Apply per-cell overrides after selecting the glyph so the emitted draw
+						// uses the requested colors regardless of the runtime's internal ordering.
+						if (charColor !== undefined) applyResolvedColor(this, 'charColor', charColor);
+						if (cellColor !== undefined) applyResolvedColor(this, 'cellColor', cellColor);
+
+						this.point();
+					} finally {
+						this.pop();
+					}
 				}
-
-				if (cellColor !== undefined) {
-					applyResolvedColor(this, 'cellColor', cellColor);
-				}
-
-				this.point();
+			} finally {
 				this.pop();
 			}
-
-			this.pop();
 		},
 	});
 
 	api.defineExtension('textmodifier', 'figTextWidth', {
 		value: function (this: Textmodifier, text: string, options: FigTextOptions = {}) {
-			return getActiveFigFont(this).measureText(text, options).cols;
+			return getActiveFigFont(state).measureText(text, options).cols;
 		},
 	});
 
 	api.defineExtension('textmodifier', 'figTextHeight', {
 		value: function (this: Textmodifier, text: string, options: FigTextOptions = {}) {
-			return getActiveFigFont(this).measureText(text, options).rows;
+			return getActiveFigFont(state).measureText(text, options).rows;
 		},
 	});
 
 	api.defineExtension('textmodifier', 'figTextBounds', {
 		value: function (this: Textmodifier, text: string, options: FigTextOptions = {}) {
-			return getActiveFigFont(this).measureText(text, options);
+			return getActiveFigFont(state).measureText(text, options);
 		},
 	});
 
 	api.defineExtension('textmodifier', 'figTextAlign', {
 		value: function (this: Textmodifier, align?: FigTextAlign) {
-			const state = getFigletState(this);
-
 			if (align === undefined) {
 				return state.align;
 			}
@@ -218,8 +214,6 @@ export function installTextmodifierFigletExtensions(api: TextmodePluginContext):
 
 	api.defineExtension('textmodifier', 'figTextBaseline', {
 		value: function (this: Textmodifier, baseline?: FigTextBaseline) {
-			const state = getFigletState(this);
-
 			if (baseline === undefined) {
 				return state.baseline;
 			}
