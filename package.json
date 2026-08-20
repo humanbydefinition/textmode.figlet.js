@@ -1,6 +1,6 @@
 {
 	"name": "textmode.figlet.js",
-	"version": "1.0.4",
+	"version": "1.0.4-beta.2",
 	"description": "FIGlet font support for textmode.js",
 	"type": "module",
 	"devEngines": {
