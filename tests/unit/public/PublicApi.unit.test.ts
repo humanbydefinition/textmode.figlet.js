@@ -13,7 +13,6 @@ import {
 describe('textmode.figlet.js public API unit', () => {
 	it('exports the plugin with the expected name', () => {
 		expect(FigletPlugin.name).toBe(packageJson.name);
-		expect(FigletPlugin.version).toBe(packageJson.version);
 	});
 
 	it('exports the pure FIGfont engine modules from the package root', () => {
@@ -30,21 +29,20 @@ describe('textmode.figlet.js public API unit', () => {
 		expect(typeof TextmodeFigFont.prototype.measureText).toBe('function');
 	});
 
-	it('exposes install and uninstall hooks on the plugin export', () => {
+	it('exposes install and a returned cleanup function on the plugin export', () => {
 		const context = { defineExtension: () => () => {} } as never;
 
-		expect(() => FigletPlugin.install({} as never, context)).not.toThrow();
-		expect(() => FigletPlugin.uninstall?.({} as never, context)).not.toThrow();
+		const cleanup = FigletPlugin.install({} as never, context) as unknown as () => void;
+		expect(cleanup).toBeTypeOf('function');
+		expect(() => cleanup()).not.toThrow();
 	});
 
 	it('registers the runtime package exports on window for UMD consumers', () => {
-		const umdGlobals = window as typeof window & Record<string, unknown>;
-
-		expect(umdGlobals.FigletPlugin).toBe(FigletPlugin);
-		expect(umdGlobals.TextmodeFigFont).toBe(TextmodeFigFont);
-		expect(umdGlobals.FigFontParser).toBe(FigFontParser);
-		expect(umdGlobals.FigLayoutEngine).toBe(FigLayoutEngine);
-		expect(umdGlobals.FigSmushRules).toBe(FigSmushRules);
-		expect(umdGlobals.FIGFONT_REQUIRED_CODEPOINTS).toBe(FIGFONT_REQUIRED_CODEPOINTS);
+		expect(window.FigletPlugin).toBe(FigletPlugin);
+		expect(window.TextmodeFigFont).toBe(TextmodeFigFont);
+		expect(window.FigFontParser).toBe(FigFontParser);
+		expect(window.FigLayoutEngine).toBe(FigLayoutEngine);
+		expect(window.FigSmushRules).toBe(FigSmushRules);
+		expect(window.FIGFONT_REQUIRED_CODEPOINTS).toBe(FIGFONT_REQUIRED_CODEPOINTS);
 	});
 });

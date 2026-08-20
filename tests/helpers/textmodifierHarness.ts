@@ -33,7 +33,6 @@ export class MockRenderer {
 export type TextmodifierHarness = Textmodifier & {
 	_renderer: MockRenderer;
 	font: TestFont;
-	_trackDisposable: ReturnType<typeof vi.fn>;
 	push: () => void;
 	pop: () => void;
 	translate: (x?: number, y?: number, z?: number) => void;
@@ -95,7 +94,6 @@ export function createTextmodifierHarness(): TextmodifierHarness {
 	return {
 		_renderer: renderer,
 		font,
-		_trackDisposable: vi.fn(),
 		push() {
 			renderer.state._push();
 		},

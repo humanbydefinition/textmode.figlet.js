@@ -37,6 +37,7 @@ describe('FigletPlugin integration', () => {
 	let stub: TextmodifierHarness;
 	let context: TextmodePluginContext;
 	let uninstallExtensions: () => void;
+	let pluginCleanup: (() => void) | undefined;
 	let figFont: TextmodeFigFont;
 
 	beforeEach(() => {
@@ -45,11 +46,11 @@ describe('FigletPlugin integration', () => {
 		context = pluginContext.context;
 		uninstallExtensions = pluginContext.uninstallExtensions;
 		figFont = TextmodeFigFont._fromString('fixture', fontData);
-		FigletPlugin.install(stub, context);
+		pluginCleanup = FigletPlugin.install(stub, context) ?? undefined;
 	});
 
 	afterEach(() => {
-		FigletPlugin.uninstall?.(stub, context);
+		pluginCleanup?.();
 		uninstallExtensions();
 		vi.restoreAllMocks();
 	});
@@ -66,7 +67,26 @@ describe('FigletPlugin integration', () => {
 		expect(global.fetch).toHaveBeenCalledWith('fonts/test.flf');
 		expect(loadedFont).toBeInstanceOf(TextmodeFigFont);
 		expect(parsedFont).toBeInstanceOf(TextmodeFigFont);
-		expect(stub._trackDisposable).toHaveBeenCalledTimes(2);
+	});
+
+	it('disposes fonts created by the installation', () => {
+		const ownedFont = stub.parseFigFont('owned', fontData);
+		const dispose = vi.spyOn(ownedFont, 'dispose');
+
+		pluginCleanup?.();
+
+		expect(dispose).toHaveBeenCalledOnce();
+	});
+
+	it('disposes a late font load instead of resurrecting disposed state', async () => {
+		let resolveResponse!: (response: Response) => void;
+		global.fetch = vi.fn(() => new Promise<Response>((resolve) => (resolveResponse = resolve))) as typeof fetch;
+		const pending = stub.loadFigFont('fonts/late.flf');
+
+		pluginCleanup?.();
+		resolveResponse({ ok: true, text: async () => fontData } as Response);
+
+		await expect(pending).rejects.toThrow('FIGlet plugin has been disposed');
 	});
 
 	it('stores and returns the active FIGlet font', () => {
@@ -136,6 +156,26 @@ describe('FigletPlugin integration', () => {
 		expect(stub.font._getCharacterColor).toHaveBeenCalledWith('A');
 		expect(stub.font._getCharacterColor).toHaveBeenCalledWith('B');
 		expect(stub._renderer._rect).toHaveBeenCalledTimes(4);
+	});
+
+	it('restores the outer and cell render state when a color resolver throws', () => {
+		stub.figFont(figFont);
+		const initial = RenderState._createStateObject();
+		stub._renderer.state._copyTo(initial);
+
+		expect(() =>
+			stub.figText('AB', 0, 0, {
+				horizontalLayout: 'fitted',
+				charColor: () => {
+					throw new Error('color failed');
+				},
+			})
+		).toThrow('color failed');
+
+		const restored = RenderState._createStateObject();
+		stub._renderer.state._copyTo(restored);
+		expect(restored._translationX).toBe(initial._translationX);
+		expect(restored._translationY).toBe(initial._translationY);
 	});
 
 	it('renders right-to-left FIGlet text in reversed visual order when requested', () => {
@@ -251,13 +291,13 @@ describe('FigletPlugin integration', () => {
 	});
 
 	it('removes installed methods when the host uninstalls extensions', () => {
-		FigletPlugin.uninstall?.(stub, context);
+		pluginCleanup?.();
 		uninstallExtensions();
 
 		expect(stub.figText).toBeUndefined();
 		expect(stub.figFont).toBeUndefined();
 		expect(stub.loadFigFont).toBeUndefined();
 
-		FigletPlugin.install(stub, context);
+		pluginCleanup = FigletPlugin.install(stub, context) ?? undefined;
 	});
 });

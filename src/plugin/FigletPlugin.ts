@@ -3,15 +3,15 @@ import type { TextmodePlugin, TextmodePluginContext } from 'textmode.js';
 import packageJson from '../../package.json';
 
 import { installTextmodifierFigletExtensions } from '../extensions';
-import { clearFigletState } from '../state/figletState';
+import { createFigletState, disposeFigletState } from '../state/figletState';
 
 /**
  * Plugin entrypoint for the FIGlet add-on.
  *
  * Installs FIGlet methods on the `Textmodifier` through
  * {@link TextmodePluginContext.defineExtension}, so the plugin runtime owns conflict
- * detection and uninstall cleanup for the extension properties. Per-instance plugin
- * state is cleared on uninstall.
+ * detection and cleanup for the extension properties. Per-instance plugin state is
+ * cleared by the returned cleanup function.
  *
  * @category Workflow
  *
@@ -22,13 +22,16 @@ import { clearFigletState } from '../state/figletState';
  */
 export const FigletPlugin: TextmodePlugin = {
 	name: packageJson.name,
-	version: packageJson.version,
 
-	install(_textmodifier: Textmodifier, api: TextmodePluginContext): void {
-		installTextmodifierFigletExtensions(api);
-	},
+	install(_textmodifier: Textmodifier, api: TextmodePluginContext): () => void {
+		const state = createFigletState();
+		try {
+			installTextmodifierFigletExtensions(api, state);
+		} catch (error) {
+			disposeFigletState(state);
+			throw error;
+		}
 
-	uninstall(textmodifier: Textmodifier, _context: TextmodePluginContext): void {
-		clearFigletState(textmodifier);
+		return () => disposeFigletState(state);
 	},
 };

@@ -1,5 +1,4 @@
-import type { Textmodifier } from 'textmode.js';
-
+import { FigletError } from '../error/FigletError';
 import type { FigTextAlign, FigTextBaseline } from '../figfont';
 import type { TextmodeFigFont } from '../figfont';
 
@@ -10,34 +9,44 @@ export interface FigletPluginState {
 	activeFont?: TextmodeFigFont;
 	align: FigTextAlign;
 	baseline: FigTextBaseline;
-}
-
-const states = new WeakMap<Textmodifier, FigletPluginState>();
-
-/**
- * Get the FIGlet plugin state for a Textmodifier instance, creating it when missing.
- *
- * @param textmodifier Target instance.
- * @returns Mutable FIGlet plugin state for that instance.
- */
-export function getFigletState(textmodifier: Textmodifier): FigletPluginState {
-	let state = states.get(textmodifier);
-	if (!state) {
-		state = {
-			activeFont: undefined,
-			align: 'left',
-			baseline: 'baseline',
-		};
-		states.set(textmodifier, state);
-	}
-	return state;
+	readonly ownedFonts: Set<TextmodeFigFont>;
+	disposed: boolean;
 }
 
 /**
- * Remove the FIGlet plugin state from a Textmodifier instance.
+ * Create state owned by one FIGlet plugin installation.
  *
- * @param textmodifier Target instance.
+ * @returns Mutable state captured by that installation's extensions.
  */
-export function clearFigletState(textmodifier: Textmodifier): void {
-	states.delete(textmodifier);
+export function createFigletState(): FigletPluginState {
+	return {
+		activeFont: undefined,
+		align: 'left',
+		baseline: 'baseline',
+		ownedFonts: new Set(),
+		disposed: false,
+	};
+}
+
+/** Register a font created by this plugin installation for teardown. */
+export function trackFont(state: FigletPluginState, font: TextmodeFigFont): TextmodeFigFont {
+	assertFigletStateLive(state);
+	state.ownedFonts.add(font);
+	return font;
+}
+
+/** Throw when a retained extension or asynchronous callback outlives its installation. */
+export function assertFigletStateLive(state: FigletPluginState): void {
+	if (state.disposed) throw new FigletError('FIGlet plugin has been disposed.');
+}
+
+/**
+ * Dispose resources owned by one FIGlet plugin installation.
+ */
+export function disposeFigletState(state: FigletPluginState): void {
+	if (state.disposed) return;
+	state.disposed = true;
+	state.activeFont = undefined;
+	for (const font of state.ownedFonts) font.dispose();
+	state.ownedFonts.clear();
 }

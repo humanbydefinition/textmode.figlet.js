@@ -3,6 +3,7 @@
  */
 import type { TextmodeFigFont } from '../figfont';
 import type { FigTextAlign, FigTextBaseline, FigTextOptions } from '../figfont';
+import type {} from 'textmode.js/addon';
 
 /**
  * FIGlet methods added to the `textmode.js` `Textmodifier` API when
@@ -161,6 +162,6 @@ export interface TextmodifierFigletExtensions {
 	figTextBaseline(baseline: FigTextBaseline): void;
 }
 
-declare module 'textmode.js' {
-	interface Textmodifier extends TextmodifierFigletExtensions {}
+declare module 'textmode.js/addon' {
+	interface TextmodifierExtensions extends TextmodifierFigletExtensions {}
 }
