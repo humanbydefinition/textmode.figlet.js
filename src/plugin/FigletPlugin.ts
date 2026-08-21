@@ -3,7 +3,7 @@ import type { TextmodePlugin, TextmodePluginContext } from 'textmode.js';
 import packageJson from '../../package.json';
 
 import { installTextmodifierFigletExtensions } from '../extensions';
-import { clearFigletState } from '../state/figletState';
+import { createFigletState, disposeFigletState } from '../state/figletState';
 
 /**
  * Plugin entrypoint for the FIGlet add-on.
@@ -23,8 +23,15 @@ import { clearFigletState } from '../state/figletState';
 export const FigletPlugin: TextmodePlugin = {
 	name: packageJson.name,
 
-	install(textmodifier: Textmodifier, api: TextmodePluginContext): () => void {
-		installTextmodifierFigletExtensions(api);
-		return () => clearFigletState(textmodifier);
+	install(_textmodifier: Textmodifier, api: TextmodePluginContext): () => void {
+		const state = createFigletState();
+		try {
+			installTextmodifierFigletExtensions(api, state);
+		} catch (error) {
+			disposeFigletState(state);
+			throw error;
+		}
+
+		return () => disposeFigletState(state);
 	},
 };
