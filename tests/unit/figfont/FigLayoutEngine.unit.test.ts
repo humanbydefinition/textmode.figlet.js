@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { FigLayoutEngine, FigSmushRules, TextmodeFigFont } from '../../../src/figfont';
 import { readFigFontFixture } from '../../fixtures/builders/figFontBuilder';
 
-import type { FigCharacter, FigFontHeader, FigRenderLine } from '../../../src/figfont';
+import type { FigCharacter, FigFontHeader, FigHorizontalLayout, FigRenderLine } from '../../../src/figfont';
 
 function createHeader(overrides: Partial<FigFontHeader> = {}): FigFontHeader {
 	return {
@@ -27,6 +27,27 @@ function createCharacter(code: number, lines: string[]): FigCharacter {
 		lines,
 		width: Math.max(...lines.map((line) => line.length)),
 	};
+}
+
+function renderLineToGrid(line: FigRenderLine): string[][] {
+	const grid = Array.from({ length: line.rows }, () => Array.from({ length: line.cols }, () => ' '));
+	for (const cell of line.cells) {
+		grid[cell.row]![cell.col] = cell.char;
+	}
+	return grid;
+}
+
+function layoutPlanToGrid(
+	engine: FigLayoutEngine,
+	figChars: readonly FigCharacter[],
+	mode: FigHorizontalLayout
+): string[][] {
+	const inputs = figChars.map((figChar, inputIndex) => ({
+		inputIndex,
+		inputChar: String.fromCodePoint(figChar.code),
+	}));
+	const line = engine._layoutHorizontalPlan(figChars, inputs, mode, 0);
+	return renderLineToGrid(line);
 }
 
 function createRenderLine(
@@ -61,7 +82,7 @@ describe('FigLayoutEngine unit', () => {
 		const left = createCharacter(65, ['A ', 'A ']);
 		const right = createCharacter(66, [' B', ' B']);
 
-		expect(engine._layoutHorizontal([left, right], 'full')).toEqual([
+		expect(layoutPlanToGrid(engine, [left, right], 'full')).toEqual([
 			['A', ' ', ' ', 'B'],
 			['A', ' ', ' ', 'B'],
 		]);
@@ -72,7 +93,7 @@ describe('FigLayoutEngine unit', () => {
 		const left = createCharacter(65, ['A ', 'A ']);
 		const right = createCharacter(66, [' B', ' B']);
 
-		expect(engine._layoutHorizontal([left, right], 'fitted')).toEqual([
+		expect(layoutPlanToGrid(engine, [left, right], 'fitted')).toEqual([
 			['A', 'B'],
 			['A', 'B'],
 		]);
@@ -88,7 +109,7 @@ describe('FigLayoutEngine unit', () => {
 		const left = createCharacter(91, ['[', '[']);
 		const right = createCharacter(93, [']', ']']);
 
-		expect(engine._layoutHorizontal([left, right], 'smushed')).toEqual([['|'], ['|']]);
+		expect(layoutPlanToGrid(engine, [left, right], 'smushed')).toEqual([['|'], ['|']]);
 	});
 
 	it('treats hardblanks as non-blank during layout and converts them to spaces in the final grid', () => {
@@ -96,7 +117,7 @@ describe('FigLayoutEngine unit', () => {
 		const hardblank = createCharacter(36, ['$', '$']);
 		const letter = createCharacter(88, ['X', 'X']);
 
-		expect(fittedEngine._layoutHorizontal([hardblank, letter], 'fitted')).toEqual([
+		expect(layoutPlanToGrid(fittedEngine, [hardblank, letter], 'fitted')).toEqual([
 			[' ', 'X'],
 			[' ', 'X'],
 		]);
@@ -108,7 +129,7 @@ describe('FigLayoutEngine unit', () => {
 			})
 		);
 
-		expect(smushedEngine._layoutHorizontal([hardblank, hardblank], 'smushed')).toEqual([[' '], [' ']]);
+		expect(layoutPlanToGrid(smushedEngine, [hardblank, hardblank], 'smushed')).toEqual([[' '], [' ']]);
 	});
 
 	it('renders and measures text through TextmodeFigFont using the layout engine', () => {

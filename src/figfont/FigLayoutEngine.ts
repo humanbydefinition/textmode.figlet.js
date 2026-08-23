@@ -4,8 +4,8 @@ import type {
 	FigCharacter,
 	FigFontHeader,
 	FigHorizontalLayout,
-	FigRenderCell,
 	FigRenderLine,
+	FigTextCellContext,
 	FigVerticalLayout,
 } from './types';
 
@@ -28,24 +28,6 @@ export class FigLayoutEngine {
 		this._header = header;
 		this._horizontalRuleMask = FigSmushRules._getHorizontalRuleMask(header);
 		this._verticalRuleMask = FigSmushRules._getVerticalRuleMask(header);
-	}
-
-	/**
-	 * Lay out a sequence of FIGcharacters into a combined 2D grid.
-	 */
-	public _layoutHorizontal(figChars: readonly FigCharacter[], mode: FigHorizontalLayout): string[][] {
-		const inputs = figChars.map((figChar, inputIndex) => ({
-			inputIndex,
-			inputChar: String.fromCodePoint(figChar.code),
-		}));
-		const line = this._layoutHorizontalPlan(figChars, inputs, mode, 0);
-		const grid = Array.from({ length: line.rows }, () => Array.from({ length: line.cols }, () => ' '));
-
-		for (const cell of line.cells) {
-			grid[cell.row]![cell.col] = cell.char;
-		}
-
-		return grid;
 	}
 
 	/**
@@ -132,7 +114,7 @@ export class FigLayoutEngine {
 		lines: readonly FigRenderLine[],
 		mode: FigVerticalLayout
 	): {
-		cells: FigRenderCell[];
+		cells: FigTextCellContext[];
 		lines: FigRenderLine[];
 		cols: number;
 		rows: number;
@@ -194,7 +176,7 @@ export class FigLayoutEngine {
 	}
 
 	private _calculateSmushAmountForRows(
-		leftRows: Array<Array<FigRenderCell | undefined>>,
+		leftRows: Array<Array<FigTextCellContext | undefined>>,
 		leftWidth: number,
 		right: FigCharacter,
 		mode: FigHorizontalLayout
@@ -248,7 +230,7 @@ export class FigLayoutEngine {
 			inputChar: String.fromCodePoint(figChar.code),
 		},
 		lineIndex: number = 0
-	): Array<Array<FigRenderCell | undefined>> {
+	): Array<Array<FigTextCellContext | undefined>> {
 		return Array.from({ length: this._header.height }, (_, rowIndex) => {
 			const line = figChar.lines[rowIndex] ?? '';
 			return Array.from({ length: figChar.width }, (_, column) => {
@@ -268,7 +250,7 @@ export class FigLayoutEngine {
 		figChar: FigCharacter,
 		input: FigLayoutInput,
 		char: string
-	): FigRenderCell {
+	): FigTextCellContext {
 		return {
 			char,
 			col,
@@ -282,7 +264,7 @@ export class FigLayoutEngine {
 		};
 	}
 
-	private _resolveSmushedCell(left: FigRenderCell, right: FigRenderCell, char: string): FigRenderCell {
+	private _resolveSmushedCell(left: FigTextCellContext, right: FigTextCellContext, char: string): FigTextCellContext {
 		if (char === left.char) {
 			return left;
 		}
@@ -294,11 +276,11 @@ export class FigLayoutEngine {
 	}
 
 	private _materializeLine(
-		rows: Array<Array<FigRenderCell | undefined>>,
+		rows: Array<Array<FigTextCellContext | undefined>>,
 		width: number,
 		lineIndex: number
 	): FigRenderLine {
-		const cells: FigRenderCell[] = [];
+		const cells: FigTextCellContext[] = [];
 
 		for (let rowIndex = 0; rowIndex < this._header.height; rowIndex += 1) {
 			const row = rows[rowIndex] ?? [];
@@ -327,7 +309,7 @@ export class FigLayoutEngine {
 	}
 
 	private _calculateVerticalSmushAmount(
-		topRows: Array<Array<FigRenderCell | undefined>>,
+		topRows: Array<Array<FigTextCellContext | undefined>>,
 		topHeight: number,
 		width: number,
 		bottomLine: FigRenderLine,
@@ -379,9 +361,9 @@ export class FigLayoutEngine {
 		return FigSmushRules._smushVertical(top, bottom, this._verticalRuleMask) !== null;
 	}
 
-	private _createRowsFromLine(line: FigRenderLine): Array<Array<FigRenderCell | undefined>> {
+	private _createRowsFromLine(line: FigRenderLine): Array<Array<FigTextCellContext | undefined>> {
 		const rows = Array.from({ length: line.rows }, () =>
-			Array.from({ length: line.cols }, () => undefined as FigRenderCell | undefined)
+			Array.from({ length: line.cols }, () => undefined as FigTextCellContext | undefined)
 		);
 
 		for (const cell of line.cells) {
@@ -402,17 +384,17 @@ export class FigLayoutEngine {
 	}
 
 	private _materializePlan(
-		rows: Array<Array<FigRenderCell | undefined>>,
+		rows: Array<Array<FigTextCellContext | undefined>>,
 		width: number,
 		height: number,
 		lines: FigRenderLine[]
 	): {
-		cells: FigRenderCell[];
+		cells: FigTextCellContext[];
 		lines: FigRenderLine[];
 		cols: number;
 		rows: number;
 	} {
-		const cells: FigRenderCell[] = [];
+		const cells: FigTextCellContext[] = [];
 
 		for (let rowIndex = 0; rowIndex < height; rowIndex += 1) {
 			for (let column = 0; column < width; column += 1) {
