@@ -51,7 +51,7 @@ export class FigSmushRules {
 		}
 
 		if (rules === 0) {
-			return this._smushUniversal(left, right, hardblank);
+			return this._smushUniversal(left, right);
 		}
 
 		return (
@@ -67,7 +67,7 @@ export class FigSmushRules {
 	/**
 	 * Universal smushing used when a font requests smushing without any rule bits enabled.
 	 */
-	public static _smushUniversal(left: string, right: string, _hardblank: string): string {
+	public static _smushUniversal(left: string, right: string): string {
 		if (left === ' ') {
 			return right;
 		}
@@ -94,7 +94,7 @@ export class FigSmushRules {
 		}
 
 		if (rules === 0) {
-			return this._smushUniversal(top, bottom, ' ');
+			return this._smushUniversal(top, bottom);
 		}
 
 		return (
