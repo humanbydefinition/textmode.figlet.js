@@ -20,5 +20,6 @@ export type {
 	FigVerticalLayout,
 	FigWrapMode,
 	ParsedFigFontData,
+	ResolvedFigInputCharacter,
 } from './types';
 export { FIGFONT_REQUIRED_CODEPOINTS } from './types';

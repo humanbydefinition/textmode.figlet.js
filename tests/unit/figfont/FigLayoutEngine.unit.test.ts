@@ -42,11 +42,12 @@ function layoutPlanToGrid(
 	figChars: readonly FigCharacter[],
 	mode: FigHorizontalLayout
 ): string[][] {
-	const inputs = figChars.map((figChar, inputIndex) => ({
+	const characters = figChars.map((figChar, inputIndex) => ({
+		figChar,
 		inputIndex,
 		inputChar: String.fromCodePoint(figChar.code),
 	}));
-	const line = engine._layoutHorizontalPlan(figChars, inputs, mode, 0);
+	const line = engine._layoutHorizontalPlan(characters, mode, 0);
 	return renderLineToGrid(line);
 }
 

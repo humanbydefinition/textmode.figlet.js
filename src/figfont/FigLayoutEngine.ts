@@ -7,12 +7,8 @@ import type {
 	FigRenderLine,
 	FigTextCellContext,
 	FigVerticalLayout,
+	ResolvedFigInputCharacter,
 } from './types';
-
-interface FigLayoutInput {
-	inputIndex: number;
-	inputChar: string;
-}
 
 /**
  * Horizontal FIGlet layout engine for composing FIGcharacters into a character grid.
@@ -34,12 +30,11 @@ export class FigLayoutEngine {
 	 * Lay out a sequence of FIGcharacters into a positioned render line.
 	 */
 	public _layoutHorizontalPlan(
-		figChars: readonly FigCharacter[],
-		inputs: readonly FigLayoutInput[],
+		characters: readonly ResolvedFigInputCharacter[],
 		mode: FigHorizontalLayout,
 		lineIndex: number
 	): FigRenderLine {
-		if (figChars.length === 0) {
+		if (characters.length === 0) {
 			return {
 				lineIndex,
 				cells: [],
@@ -48,19 +43,17 @@ export class FigLayoutEngine {
 			};
 		}
 
-		let rows = this._createRowsFromCharacter(figChars[0], inputs[0], lineIndex);
-		let width = figChars[0].width;
+		const first = characters[0]!;
+		let rows = this._createRowsFromCharacter(first, lineIndex);
+		let width = first.figChar.width;
 
-		for (let figCharIndex = 1; figCharIndex < figChars.length; figCharIndex += 1) {
-			const figChar = figChars[figCharIndex]!;
-			const input = inputs[figCharIndex] ?? {
-				inputIndex: figCharIndex,
-				inputChar: String.fromCodePoint(figChar.code),
-			};
+		for (let index = 1; index < characters.length; index += 1) {
+			const item = characters[index]!;
+			const { figChar } = item;
 			const overlap = this._calculateSmushAmountForRows(rows, width, figChar, mode);
 			const startColumn = width - overlap;
 			const nextWidth = Math.max(width, startColumn + figChar.width);
-			const mergedRows = rows.map((row) => Array.from({ length: nextWidth }, (_, index) => row[index]));
+			const mergedRows = rows.map((row) => Array.from({ length: nextWidth }, (_, colIndex) => row[colIndex]));
 
 			for (let rowIndex = 0; rowIndex < this._header.height; rowIndex += 1) {
 				const rightLine = figChar.lines[rowIndex] ?? '';
@@ -74,15 +67,7 @@ export class FigLayoutEngine {
 
 					const targetColumn = startColumn + column;
 					const leftCell = mergedRow[targetColumn];
-					const rightCell = this._createCell(
-						targetColumn,
-						rowIndex,
-						column,
-						lineIndex,
-						figChar,
-						input,
-						rightChar
-					);
+					const rightCell = this._createCell(targetColumn, rowIndex, column, lineIndex, item, rightChar);
 
 					if (!leftCell) {
 						mergedRow[targetColumn] = rightCell;
@@ -224,20 +209,15 @@ export class FigLayoutEngine {
 	}
 
 	private _createRowsFromCharacter(
-		figChar: FigCharacter,
-		input: FigLayoutInput = {
-			inputIndex: 0,
-			inputChar: String.fromCodePoint(figChar.code),
-		},
+		item: ResolvedFigInputCharacter,
 		lineIndex: number = 0
 	): Array<Array<FigTextCellContext | undefined>> {
+		const { figChar } = item;
 		return Array.from({ length: this._header.height }, (_, rowIndex) => {
 			const line = figChar.lines[rowIndex] ?? '';
 			return Array.from({ length: figChar.width }, (_, column) => {
 				const char = line[column] ?? ' ';
-				return char === ' '
-					? undefined
-					: this._createCell(column, rowIndex, column, lineIndex, figChar, input, char);
+				return char === ' ' ? undefined : this._createCell(column, rowIndex, column, lineIndex, item, char);
 			});
 		});
 	}
@@ -247,17 +227,16 @@ export class FigLayoutEngine {
 		row: number,
 		subCol: number,
 		lineIndex: number,
-		figChar: FigCharacter,
-		input: FigLayoutInput,
+		item: ResolvedFigInputCharacter,
 		char: string
 	): FigTextCellContext {
 		return {
 			char,
 			col,
 			row,
-			inputIndex: input.inputIndex,
-			inputChar: input.inputChar,
-			figCharCode: figChar.code,
+			inputIndex: item.inputIndex,
+			inputChar: item.inputChar,
+			figCharCode: item.figChar.code,
 			subRow: row,
 			subCol,
 			lineIndex,

@@ -126,6 +126,17 @@ export interface ParsedFigFontData {
 }
 
 /**
+ * A resolved input character bound to its matching FIGcharacter glyph.
+ *
+ * @internal
+ */
+export interface ResolvedFigInputCharacter {
+	figChar: FigCharacter;
+	inputChar: string;
+	inputIndex: number;
+}
+
+/**
  * Supported horizontal layout modes for FIGlet rendering.
  *
  * @category Layout and rendering
