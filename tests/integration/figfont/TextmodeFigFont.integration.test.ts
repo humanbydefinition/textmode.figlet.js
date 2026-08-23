@@ -189,4 +189,70 @@ describe('TextmodeFigFont integration', () => {
 		expect(font.characters.size).toBeGreaterThan(1);
 		expect(font.getCharacter('A')?.code).toBe(65);
 	});
+
+	it('handles invalid maxCols by falling back to no-wrap or flooring values', () => {
+		const font = TextmodeFigFont._fromString('Standard', fontData);
+
+		expect(font.measureText('A B', { wrap: 'word', maxCols: Number.NaN, horizontalLayout: 'full' })).toEqual({
+			cols: 6,
+			rows: 2,
+		});
+		expect(
+			font.measureText('A B', { wrap: 'word', maxCols: Number.POSITIVE_INFINITY, horizontalLayout: 'full' })
+		).toEqual({
+			cols: 6,
+			rows: 2,
+		});
+		expect(font.measureText('A B', { wrap: 'word', maxCols: -5, horizontalLayout: 'full' })).toEqual({
+			cols: 6,
+			rows: 2,
+		});
+		expect(font.measureText('A B', { wrap: 'word', maxCols: 0, horizontalLayout: 'full' })).toEqual({
+			cols: 6,
+			rows: 2,
+		});
+		expect(font.measureText('A B', { wrap: 'word', maxCols: 2.9, horizontalLayout: 'full' })).toEqual({
+			cols: 2,
+			rows: 4,
+		});
+	});
+
+	it('handles empty input and whitespace-only wrapped lines gracefully', () => {
+		const font = TextmodeFigFont._fromString('Standard', fontData);
+
+		const emptyPlan = font.planText('');
+		expect(emptyPlan.cells).toHaveLength(0);
+		expect(emptyPlan.cols).toBe(0);
+		expect(emptyPlan.rows).toBe(font.height);
+		expect(font.renderText('')).toEqual({
+			grid: [[], []],
+			cols: 0,
+			rows: 2,
+		});
+
+		const wsBounds = font.measureText('   ', { wrap: 'word', maxCols: 2 });
+		expect(wsBounds.cols).toBeGreaterThan(0);
+		expect(wsBounds.rows).toBe(2);
+	});
+
+	it('detects smushed default vertical layout from header fullLayout flags', () => {
+		const font = TextmodeFigFont._fromString(
+			'VerticalSmushed',
+			buildSingleWidthFigFont({ headerLine: 'flf2a$ 1 1 8 -1 0 0 16384 0' })
+		);
+
+		expect(font.defaultVerticalLayout).toBe('smushed');
+	});
+
+	it('resolves font name from URL objects and strips query or hash segments', async () => {
+		const fontFromURL = await TextmodeFigFont._fromURL(
+			new URL('https://code.textmode.art/assets/fonts/custom-font.flf?v=1.2#preview')
+		);
+		expect(fontFromURL.name).toBe('custom-font');
+
+		const fontFromString = await TextmodeFigFont._fromURL(
+			'https://code.textmode.art/assets/fonts/query-font.flf?token=abc'
+		);
+		expect(fontFromString.name).toBe('query-font');
+	});
 });
