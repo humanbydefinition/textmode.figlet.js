@@ -117,7 +117,7 @@ export class TextmodeFigFont extends Disposable {
 		const verticalLayout = options.verticalLayout ?? this.defaultVerticalLayout;
 		const direction = this._resolveDirection(options.direction);
 		const lineInputs = this._splitInputLines(text)
-			.map((line) => this._applyDirectionToInputLine(line, direction))
+			.map((line) => (direction === 'rtl' ? [...line].reverse() : line))
 			.flatMap((line) => this._wrapInputLine(line, horizontalLayout, options));
 		const plannedLines = lineInputs.map((line, lineIndex) => {
 			const characters = this._resolveCharacters(line);
@@ -338,10 +338,6 @@ export class TextmodeFigFont extends Disposable {
 		}
 
 		return lines;
-	}
-
-	private _applyDirectionToInputLine(line: FigInputCharacter[], direction: 'ltr' | 'rtl'): FigInputCharacter[] {
-		return direction === 'rtl' ? [...line].reverse() : line;
 	}
 
 	private _resolveCharacters(line: FigInputCharacter[]): ResolvedFigInputCharacter[] {
