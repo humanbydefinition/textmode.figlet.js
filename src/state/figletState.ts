@@ -32,6 +32,12 @@ export function createFigletState(): FigletPluginState {
 export function trackFont(state: FigletPluginState, font: TextmodeFigFont): TextmodeFigFont {
 	assertFigletStateLive(state);
 	state.ownedFonts.add(font);
+	font._addOnDispose(() => {
+		state.ownedFonts.delete(font);
+		if (state.activeFont === font) {
+			state.activeFont = undefined;
+		}
+	});
 	return font;
 }
 
@@ -47,6 +53,6 @@ export function disposeFigletState(state: FigletPluginState): void {
 	if (state.disposed) return;
 	state.disposed = true;
 	state.activeFont = undefined;
-	for (const font of state.ownedFonts) font.dispose();
+	for (const font of [...state.ownedFonts]) font.dispose();
 	state.ownedFonts.clear();
 }
