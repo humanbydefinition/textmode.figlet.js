@@ -8,7 +8,6 @@ export type {
 	FigFontHeader,
 	FigHorizontalLayout,
 	FigPrintDirection,
-	FigRenderCell,
 	FigRenderLine,
 	FigRenderPlan,
 	FigTextAlign,

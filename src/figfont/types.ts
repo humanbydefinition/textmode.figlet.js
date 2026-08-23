@@ -297,13 +297,6 @@ export interface FigTextOptions {
 }
 
 /**
- * A single drawable cell produced by FIGlet layout.
- *
- * @internal
- */
-export type FigRenderCell = FigTextCellContext;
-
-/**
  * A single logical line within a planned FIGlet render.
  *
  * @internal
@@ -312,7 +305,7 @@ export interface FigRenderLine {
 	/** Logical line index. */
 	lineIndex: number;
 	/** Drawable cells in row-major order. */
-	cells: FigRenderCell[];
+	cells: FigTextCellContext[];
 	/** Width of the line in grid cells, including blanks. */
 	cols: number;
 	/** Height of the line in grid cells. */
@@ -326,7 +319,7 @@ export interface FigRenderLine {
  */
 export interface FigRenderPlan {
 	/** All drawable cells in row-major order. */
-	cells: FigRenderCell[];
+	cells: FigTextCellContext[];
 	/** Logical lines included in the rendered output. */
 	lines: FigRenderLine[];
 	/** Total rendered width in grid cells. */

@@ -6,15 +6,18 @@ import { FigletError } from '../error/FigletError';
 import { assertFigletStateLive, trackFont, type FigletPluginState } from '../state/figletState';
 
 import type {
-	FigRenderCell,
 	FigTextAlign,
 	FigTextBaseline,
+	FigTextCellContext,
 	FigTextColorResolver,
 	FigTextColorValue,
 	FigTextOptions,
 } from '../figfont';
 
-function resolveColor(value: FigTextColorResolver | undefined, cell: FigRenderCell): FigTextColorValue | undefined {
+function resolveColor(
+	value: FigTextColorResolver | undefined,
+	cell: FigTextCellContext
+): FigTextColorValue | undefined {
 	if (value === undefined) {
 		return undefined;
 	}
