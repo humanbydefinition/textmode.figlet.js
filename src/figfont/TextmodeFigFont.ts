@@ -1,4 +1,3 @@
-import { Disposable } from '../utils/Disposable';
 import { FigletError } from '../error/FigletError';
 
 import { FigFontParser } from './FigFontParser';
@@ -13,16 +12,11 @@ import type {
 	FigTextOptions,
 	FigTextResult,
 	FigVerticalLayout,
+	ResolvedFigInputCharacter,
 } from './types';
 
 interface FigInputCharacter {
 	character: string;
-	inputIndex: number;
-}
-
-interface ResolvedFigInputCharacter {
-	figChar: FigCharacter;
-	inputChar: string;
 	inputIndex: number;
 }
 
@@ -33,18 +27,49 @@ interface ResolvedFigInputCharacter {
  *
  * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont | TextmodeFigFont API reference}
  */
-export class TextmodeFigFont extends Disposable {
+export class TextmodeFigFont {
 	private readonly _name: string;
 	private readonly _header: FigFontHeader;
 	private readonly _characters: Map<number, FigCharacter>;
 	private readonly _layoutEngine: FigLayoutEngine;
+	private readonly _onDisposeCallbacks = new Set<() => void>();
+	private _disposed = false;
 
 	private constructor(name: string, header: FigFontHeader, characters: Map<number, FigCharacter>) {
-		super();
 		this._name = name;
 		this._header = header;
 		this._characters = characters;
 		this._layoutEngine = new FigLayoutEngine(header);
+	}
+
+	/**
+	 * Register a callback to run when this font is disposed.
+	 *
+	 * @internal
+	 */
+	public _addOnDispose(callback: () => void): void {
+		if (this._disposed) {
+			callback();
+			return;
+		}
+		this._onDisposeCallbacks.add(callback);
+	}
+
+	/**
+	 * Dispose resources associated with this FIGfont.
+	 *
+	 * @example
+	 * {@includeCode ../../examples/TextmodeFigFont/dispose/sketch.js}
+	 *
+	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/methods/dispose | TextmodeFigFont.dispose API reference}
+	 */
+	public dispose(): void {
+		if (this._disposed) return;
+		this._disposed = true;
+		for (const callback of this._onDisposeCallbacks) {
+			callback();
+		}
+		this._onDisposeCallbacks.clear();
 	}
 
 	/**
@@ -83,6 +108,14 @@ export class TextmodeFigFont extends Disposable {
 		return new TextmodeFigFont(name, parsed.header, parsed.characters);
 	}
 
+	private _getChar(value: number | string): FigCharacter | undefined {
+		const codePoint = typeof value === 'number' ? value : value.codePointAt(0);
+		if (codePoint === undefined) {
+			return undefined;
+		}
+		return this._characters.get(codePoint);
+	}
+
 	/**
 	 * Look up a FIGcharacter by Unicode code point or by the first character in a string.
 	 *
@@ -95,13 +128,7 @@ export class TextmodeFigFont extends Disposable {
 	 * @see {@link https://code.textmode.art/api/textmode.figlet.js/classes/TextmodeFigFont/methods/getCharacter | TextmodeFigFont.getCharacter API reference}
 	 */
 	public getCharacter(value: number | string): FigCharacter | undefined {
-		const codePoint = typeof value === 'number' ? value : Array.from(value)[0]?.codePointAt(0);
-
-		if (codePoint === undefined) {
-			return undefined;
-		}
-
-		return cloneCharacter(this._characters.get(codePoint));
+		return cloneCharacter(this._getChar(value));
 	}
 
 	/**
@@ -117,19 +144,11 @@ export class TextmodeFigFont extends Disposable {
 		const verticalLayout = options.verticalLayout ?? this.defaultVerticalLayout;
 		const direction = this._resolveDirection(options.direction);
 		const lineInputs = this._splitInputLines(text)
-			.map((line) => this._applyDirectionToInputLine(line, direction))
+			.map((line) => (direction === 'rtl' ? [...line].reverse() : line))
 			.flatMap((line) => this._wrapInputLine(line, horizontalLayout, options));
 		const plannedLines = lineInputs.map((line, lineIndex) => {
 			const characters = this._resolveCharacters(line);
-			return this._layoutEngine._layoutHorizontalPlan(
-				characters.map((character) => character.figChar),
-				characters.map(({ inputChar, inputIndex }) => ({
-					inputChar,
-					inputIndex,
-				})),
-				horizontalLayout,
-				lineIndex
-			);
+			return this._layoutEngine._layoutHorizontalPlan(characters, horizontalLayout, lineIndex);
 		});
 		const composed = this._layoutEngine._layoutVerticalPlan(plannedLines, verticalLayout);
 
@@ -340,13 +359,9 @@ export class TextmodeFigFont extends Disposable {
 		return lines;
 	}
 
-	private _applyDirectionToInputLine(line: FigInputCharacter[], direction: 'ltr' | 'rtl'): FigInputCharacter[] {
-		return direction === 'rtl' ? [...line].reverse() : line;
-	}
-
 	private _resolveCharacters(line: FigInputCharacter[]): ResolvedFigInputCharacter[] {
 		const characters = line.map(({ character, inputIndex }) => ({
-			figChar: this.getCharacter(character) ?? this.getCharacter(32),
+			figChar: this._getChar(character) ?? this._getChar(32),
 			inputChar: character,
 			inputIndex,
 		}));
@@ -457,15 +472,7 @@ export class TextmodeFigFont extends Disposable {
 
 	private _measureInputLine(line: FigInputCharacter[], horizontalLayout: FigHorizontalLayout): number {
 		const characters = this._resolveCharacters(line);
-		return this._layoutEngine._layoutHorizontalPlan(
-			characters.map((character) => character.figChar),
-			characters.map(({ inputChar, inputIndex }) => ({
-				inputChar,
-				inputIndex,
-			})),
-			horizontalLayout,
-			0
-		).cols;
+		return this._layoutEngine._layoutHorizontalPlan(characters, horizontalLayout, 0).cols;
 	}
 
 	private _tokenizeByWhitespace(

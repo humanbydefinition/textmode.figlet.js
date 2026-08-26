@@ -132,6 +132,11 @@
 					"title": "TextmodeFigFont.defaultVerticalLayout",
 					"sourceFile": "examples/TextmodeFigFont/defaultVerticalLayout/sketch.js",
 					"status": "unrated"
+				},
+				{
+					"title": "TextmodeFigFont.dispose",
+					"sourceFile": "examples/TextmodeFigFont/dispose/sketch.js",
+					"status": "unrated"
 				}
 			]
 		}
