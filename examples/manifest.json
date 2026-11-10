@@ -39,17 +39,17 @@
 				{
 					"title": "Textmodifier.figTextBounds",
 					"sourceFile": "examples/Textmodifier/figTextBounds/sketch.js",
-					"status": "unrated"
+					"status": "good"
 				},
 				{
 					"title": "Textmodifier.figTextAlign",
 					"sourceFile": "examples/Textmodifier/figTextAlign/sketch.js",
-					"status": "unrated"
+					"status": "good"
 				},
 				{
 					"title": "Textmodifier.figTextBaseline",
 					"sourceFile": "examples/Textmodifier/figTextBaseline/sketch.js",
-					"status": "unrated"
+					"status": "good"
 				}
 			]
 		},
