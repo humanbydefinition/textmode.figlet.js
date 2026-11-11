@@ -71,17 +71,17 @@
 				{
 					"title": "TextmodeFigFont.getCharacter",
 					"sourceFile": "examples/TextmodeFigFont/getCharacter/sketch.js",
-					"status": "unrated"
+					"status": "good"
 				},
 				{
 					"title": "TextmodeFigFont.planText",
 					"sourceFile": "examples/TextmodeFigFont/planText/sketch.js",
-					"status": "unrated"
+					"status": "good"
 				},
 				{
 					"title": "TextmodeFigFont.renderText",
 					"sourceFile": "examples/TextmodeFigFont/renderText/sketch.js",
-					"status": "unrated"
+					"status": "good"
 				},
 				{
 					"title": "TextmodeFigFont.measureText",
