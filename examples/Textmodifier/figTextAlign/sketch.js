@@ -5,22 +5,35 @@
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
-	fontSize: 8,
+	fontSize: window.innerWidth < 700 ? 8 : 16,
 	plugins: [FigletPlugin],
 });
-
 const sceneLayer = t.layers.add({ fontSize: window.innerWidth < 700 ? 8 : 16 });
 const labelLayer = t.layers.add({ fontSize: window.innerWidth < 700 ? 8 : 16 });
-
 const layout = { horizontalLayout: 'fitted' };
 const modes = [
 	{ name: 'LEFT', align: 'left', row: -2, color: [120, 255, 180] },
 	{ name: 'CENTER', align: 'center', row: 4, color: [120, 200, 255] },
 	{ name: 'RIGHT', align: 'right', row: 10, color: [255, 160, 220] },
 ];
-
 let font,
 	textWidth = 0;
+
+function drawLabel(lines) {
+	const { cols, rows } = labelLayer.grid;
+	const [left, top] = [-Math.floor(cols / 2), -Math.floor(rows / 2)];
+	const width = Math.max(...lines.map(([text]) => [...text].length)) + 2;
+	t.push();
+	t.translate(left + (width + 4) / 2, top + (lines.length + 5) / 2);
+	t.cellColor(6, 10, 22);
+	t.rect(width, lines.length + 2);
+	t.pop();
+	t.printAlign('left', 'top');
+	lines.forEach(([text, color], i) => {
+		t.charColor(color[0], color[1], color[2]);
+		t.print(text, left + 3, top + 3 + i);
+	});
+}
 t.setup(async () => {
 	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
 	t.figFont(font);
@@ -67,34 +80,20 @@ sceneLayer.draw(() => {
 });
 labelLayer.draw(() => {
 	t.clear();
-	const left = -Math.floor(t.grid.cols / 2);
-	const top = -Math.floor(t.grid.rows / 2);
-	const x = left + 3;
-	let y = top + 3;
-	// Opaque HUD panel, two cells in from the top and left edges.
-	t.push();
-	t.printAlign('left', 'top');
-	t.cellColor(6, 10, 22);
-	for (let i = 0; i < 380; i++) t.print(' ', left + 2 + (i % 38), top + 2 + Math.floor(i / 38));
-	t.charColor(120, 240, 180);
-	t.print('TEXTMODIFIER.FIGTEXTALIGN', x, y++);
-	t.charColor(70, 100, 140);
-	t.print('------------------------------------', x, y++);
-	t.charColor(140, 210, 255);
-	t.print('CONCEPT: HORIZONTAL ALIGNMENT', x, y++);
-	t.charColor(140, 160, 190);
-	t.print('Same text, same x = 0 anchor.', x, y++);
-	t.print('Only figTextAlign changes.', x, y++);
-	t.charColor(70, 100, 140);
-	t.print('------------------------------------', x, y++);
-	t.charColor(140, 255, 200);
-	t.print(`FIT width: ${textWidth} cells`, x, y++);
-	t.charColor(140, 160, 190);
-	t.print('Modes: left / center / right', x, y++);
-	t.pop();
+	drawLabel([
+		['TEXTMODIFIER.FIGTEXTALIGN', [120, 240, 180]],
+		['------------------------------------', [70, 100, 140]],
+		['CONCEPT: HORIZONTAL ALIGNMENT', [140, 210, 255]],
+		['Same text, same x = 0 anchor.', [140, 160, 190]],
+		['Only figTextAlign changes.', [140, 160, 190]],
+		['------------------------------------', [70, 100, 140]],
+		[`FIT width: ${Math.round(textWidth)} cells`, [140, 255, 200]],
+		['Modes: left / center / right', [140, 160, 190]],
+	]);
 });
 t.windowResized(() => {
 	t.resizeCanvas(window.innerWidth, window.innerHeight);
-	sceneLayer.fontSize(window.innerWidth < 700 ? 8 : 16);
-	labelLayer.fontSize(window.innerWidth < 700 ? 8 : 16);
+	const size = window.innerWidth < 700 ? 8 : 16;
+	t.fontSize(size);
+	for (const layer of t.layers.all) layer.fontSize(size);
 });

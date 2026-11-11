@@ -5,13 +5,11 @@
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
-	fontSize: 8,
+	fontSize: window.innerWidth < 700 ? 8 : 16,
 	plugins: [FigletPlugin],
 });
-
 const sceneLayer = t.layers.add({ fontSize: window.innerWidth < 700 ? 8 : 16 });
 const labelLayer = t.layers.add({ fontSize: window.innerWidth < 700 ? 8 : 16 });
-
 const layout = { horizontalLayout: 'fitted' };
 const modes = [
 	{ name: 'TOP', baseline: 'top', col: -21, color: [120, 255, 180] },
@@ -19,12 +17,26 @@ const modes = [
 	{ name: 'BOTTOM', baseline: 'bottom', col: 1, color: [255, 160, 220] },
 	{ name: 'BASELINE', baseline: 'baseline', col: 12, color: [255, 220, 120] },
 ];
-
 let font,
 	glyphRows = 0;
 function rowOffset(baseline, rows) {
 	const fixed = { top: 0, center: -Math.floor(rows / 2), bottom: -(rows - 1) };
 	return fixed[baseline] ?? -(font.baseline - 1);
+}
+function drawLabel(lines) {
+	const { cols, rows } = labelLayer.grid;
+	const [left, top] = [-Math.floor(cols / 2), -Math.floor(rows / 2)];
+	const width = Math.max(...lines.map(([text]) => [...text].length)) + 2;
+	t.push();
+	t.translate(left + (width + 4) / 2, top + (lines.length + 5) / 2);
+	t.cellColor(6, 10, 22);
+	t.rect(width, lines.length + 2);
+	t.pop();
+	t.printAlign('left', 'top');
+	lines.forEach(([text, color], i) => {
+		t.charColor(color[0], color[1], color[2]);
+		t.print(text, left + 3, top + 3 + i);
+	});
 }
 
 t.setup(async () => {
@@ -69,32 +81,19 @@ sceneLayer.draw(() => {
 });
 labelLayer.draw(() => {
 	t.clear();
-	const left = -Math.floor(t.grid.cols / 2);
-	const top = -Math.floor(t.grid.rows / 2);
-	const x = left + 3;
-	let y = top + 3;
-	// Opaque HUD panel, two cells in from the top and left edges.
-	t.push();
-	t.printAlign('left', 'top');
-	t.cellColor(6, 10, 22);
-	for (let i = 0; i < 342; i++) t.print(' ', left + 2 + (i % 38), top + 2 + Math.floor(i / 38));
-	t.charColor(120, 240, 180);
-	t.print('TEXTMODIFIER.FIGTEXTBASELINE', x, y++);
-	t.charColor(70, 100, 140);
-	t.print('------------------------------------', x, y++);
-	t.charColor(140, 210, 255);
-	t.print('CONCEPT: VERTICAL ALIGNMENT', x, y++);
-	t.charColor(140, 160, 190);
-	t.print('Same glyph, same y = 0 anchor.', x, y++);
-	t.charColor(70, 100, 140);
-	t.print('------------------------------------', x, y++);
-	t.charColor(140, 255, 200);
-	t.print(`Font: ${font ? font.name : '...'} (${glyphRows} rows)`, x, y++);
-	t.print(`Font baseline: row ${font ? font.baseline : '?'}`, x, y++);
-	t.pop();
+	drawLabel([
+		['TEXTMODIFIER.FIGTEXTBASELINE', [120, 240, 180]],
+		['------------------------------------', [70, 100, 140]],
+		['CONCEPT: VERTICAL ALIGNMENT', [140, 210, 255]],
+		['Same glyph, same y = 0 anchor.', [140, 160, 190]],
+		['------------------------------------', [70, 100, 140]],
+		[`Font: ${font ? font.name : '...'} (${glyphRows} rows)`, [140, 255, 200]],
+		[`Font baseline: row ${font ? Math.round(font.baseline) : '?'}`, [140, 255, 200]],
+	]);
 });
 t.windowResized(() => {
 	t.resizeCanvas(window.innerWidth, window.innerHeight);
-	sceneLayer.fontSize(window.innerWidth < 700 ? 8 : 16);
-	labelLayer.fontSize(window.innerWidth < 700 ? 8 : 16);
+	const size = window.innerWidth < 700 ? 8 : 16;
+	t.fontSize(size);
+	for (const layer of t.layers.all) layer.fontSize(size);
 });

@@ -5,7 +5,7 @@
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
-	fontSize: 8,
+	fontSize: window.innerWidth < 700 ? 8 : 16,
 	plugins: [FigletPlugin],
 });
 
@@ -15,6 +15,22 @@ const labelLayer = t.layers.add({ fontSize: window.innerWidth < 700 ? 8 : 16 });
 const chars = ['A', '5', '&', '?', '@', '#'];
 let font,
 	current = { char: 'A', code: 65, width: 0, rows: 0 };
+
+function drawLabel(lines) {
+	const { cols, rows } = labelLayer.grid;
+	const [left, top] = [-Math.floor(cols / 2), -Math.floor(rows / 2)];
+	const width = Math.max(...lines.map(([text]) => [...text].length)) + 2;
+	t.push();
+	t.translate(left + (width + 4) / 2, top + (lines.length + 5) / 2);
+	t.cellColor(6, 10, 22);
+	t.rect(width, lines.length + 2);
+	t.pop();
+	t.printAlign('left', 'top');
+	lines.forEach(([text, color], i) => {
+		t.charColor(color[0], color[1], color[2]);
+		t.print(text, left + 3, top + 3 + i);
+	});
+}
 
 t.setup(async () => {
 	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
@@ -65,34 +81,20 @@ sceneLayer.draw(() => {
 
 labelLayer.draw(() => {
 	t.clear();
-	const left = -Math.floor(t.grid.cols / 2);
-	const top = -Math.floor(t.grid.rows / 2);
-	const x = left + 3;
-	let y = top + 3;
-
-	// Opaque HUD panel, two cells in from the top and left edges.
-	t.push();
-	t.printAlign('left', 'top');
-	t.cellColor(6, 10, 22);
-	for (let i = 0; i < 380; i++) t.print(' ', left + 2 + (i % 38), top + 2 + Math.floor(i / 38));
-	t.charColor(120, 240, 180);
-	t.print('TEXTMODEFIGFONT.GETCHARACTER', x, y++);
-	t.charColor(70, 100, 140);
-	t.print('------------------------------------', x, y++);
-	t.charColor(140, 210, 255);
-	t.print('CONCEPT: INSPECT ONE GLYPH', x, y++);
-	t.charColor(140, 160, 190);
-	t.print('Code lookup returns raw glyph rows.', x, y++);
-	t.print('The frame matches width and height.', x, y++);
-	t.charColor(70, 100, 140);
-	t.print('------------------------------------', x, y++);
-	t.charColor(140, 255, 200);
-	t.print(`Char: '${current.char}'  Code: ${current.code}`, x, y++);
-	t.print(`Glyph: ${current.width} x ${current.rows} cells`, x, y++);
-	t.pop();
+	drawLabel([
+		['TEXTMODEFIGFONT.GETCHARACTER', [120, 240, 180]],
+		['------------------------------------', [70, 100, 140]],
+		['CONCEPT: INSPECT ONE GLYPH', [140, 210, 255]],
+		['Code lookup returns raw glyph rows.', [140, 160, 190]],
+		['The frame matches width and height.', [140, 160, 190]],
+		['------------------------------------', [70, 100, 140]],
+		[`Char: '${current.char}'  Code: ${Math.round(current.code)}`, [140, 255, 200]],
+		[`Glyph: ${Math.round(current.width)} x ${Math.round(current.rows)} cells`, [140, 255, 200]],
+	]);
 });
 t.windowResized(() => {
 	t.resizeCanvas(window.innerWidth, window.innerHeight);
-	sceneLayer.fontSize(window.innerWidth < 700 ? 8 : 16);
-	labelLayer.fontSize(window.innerWidth < 700 ? 8 : 16);
+	const size = window.innerWidth < 700 ? 8 : 16;
+	t.fontSize(size);
+	for (const layer of t.layers.all) layer.fontSize(size);
 });
