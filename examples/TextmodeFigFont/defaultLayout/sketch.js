@@ -1,94 +1,99 @@
 /**
  * @title TextmodeFigFont.defaultLayout
  */
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
 	fontSize: window.innerWidth < 700 ? 8 : 16,
 	plugins: [FigletPlugin],
 });
+const size = () => (window.innerWidth < 700 ? 8 : 16);
+const sceneLayer = t.layers.add({ fontSize: size() });
+const labelLayer = t.layers.add({ fontSize: size() });
+const TITLE = 'TEXTMODEFIGFONT.DEFAULTLAYOUT';
+const WORD = 'KERN';
+const modes = ['full', 'fitted', 'smushed'];
+const inks = { full: [105, 170, 255], fitted: [110, 245, 205], smushed: [255, 192, 112] };
+let font,
+	specs = [],
+	span = 1,
+	active = 0;
 
-const labelLayer = t.layers.add({ fontSize: window.innerWidth < 700 ? 8 : 16 });
-let font;
-let currentMode = 'default';
-
-function drawLabel(lines) {
-	const { cols, rows } = labelLayer.grid;
-	const [left, top] = [-Math.floor(cols / 2), -Math.floor(rows / 2)];
-	const width = Math.max(...lines.map(([text]) => [...text].length)) + 2;
+function box(x, y, w, h, rgb) {
 	t.push();
-	t.translate(left + (width + 4) / 2, top + (lines.length + 5) / 2);
-	t.cellColor(6, 10, 22);
-	t.rect(width, lines.length + 2);
+	t.translate(x, y);
+	t.cellColor(...rgb);
+	t.rect(w, h);
 	t.pop();
-	t.printAlign('left', 'top');
-	lines.forEach(([text, color], i) => {
-		t.charColor(color[0], color[1], color[2]);
-		t.print(text, left + 3, top + 3 + i);
-	});
 }
-
 t.setup(async () => {
-	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
-	t.figFont(font);
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Ogre.flf');
+	specs = modes.map((mode) => ({
+		mode,
+		plan: font.planText(WORD, { horizontalLayout: mode }),
+		cols: font.measureText(WORD, { horizontalLayout: mode }).cols,
+	}));
+	span = Math.max(...specs.map((spec) => spec.cols));
+	t.printAlign('left', 'top');
 });
-
 labelLayer.draw(() => {
+	const { cols, rows } = labelLayer.grid;
+	const [left, top] = [-Math.floor(cols / 2) + 2, -Math.floor(rows / 2) + 2];
+	const lines = [
+		[TITLE, [120, 240, 180]],
+		['------------------------------------', [70, 100, 140]],
+		['CONCEPT: HORIZONTAL KERNING', [140, 210, 255]],
+		['KERN at one origin, three calipers.', [140, 160, 190]],
+		['------------------------------------', [70, 100, 140]],
+		[
+			font
+				? `DEFAULT ${font.defaultLayout.toUpperCase()} | SCAN ${modes[active].toUpperCase()} ${specs[active].cols}`
+				: 'LOADING FONT...',
+			[140, 255, 200],
+		],
+	];
+	const width = Math.max(...lines.map(([text]) => [...text].length)) + 2;
 	t.clear();
-	drawLabel([
-		['TEXTMODEFIGFONT.DEFAULTLAYOUT', [120, 240, 180]],
-		['------------------------------------', [70, 100, 140]],
-		['CONCEPT: DEFAULT LAYOUT RULES', [140, 210, 255]],
-		['Controls horizontal kerning/smush.', [140, 160, 190]],
-		['Combines glyph edges into compact forms.', [140, 160, 190]],
-		['------------------------------------', [70, 100, 140]],
-		[font ? `Default layout: ${font.defaultLayout}` : 'Loading...', [140, 255, 200]],
-		[font ? `Current layout: ${currentMode}` : '', [140, 255, 200]],
-	]);
+	box(left + width / 2, top + (lines.length + 2) / 2, width, lines.length + 2, [6, 10, 22]);
+	t.cellColor(6, 10, 22);
+	lines.forEach(([text, color], index) => {
+		t.charColor(...color);
+		t.print(text, left + 1, top + 1 + index);
+	});
 });
-
-t.draw(() => {
-	t.background(10, 12, 18);
-
+sceneLayer.draw(() => {
+	t.clear();
 	if (!font) return;
-
-	const modes = ['full', 'fitted', 'smushed'];
-	const idx = Math.floor(t.secs / 3.0) % modes.length;
-	currentMode = modes[idx];
-
-	const plan = font.planText('LAYOUT', { horizontalLayout: currentMode });
-	if (!plan) return;
-
-	const startX = -Math.floor(plan.cols / 2);
-	const startY = -Math.floor(plan.rows / 2);
-	const time = t.secs * 1.5;
-
-	// Draw characters
-	for (const cell of plan.cells) {
-		t.push();
-		t.translate(startX + cell.col, startY + cell.row);
-		const wave = 0.5 + 0.5 * Math.sin(time + cell.col * 0.1);
-		t.charColor(Math.round(130 + 125 * wave), 255, Math.round(200 + 55 * (1.0 - wave)));
-		t.char(cell.char);
-		t.point();
-		t.pop();
+	const { rows } = sceneLayer.grid;
+	const bandTop = -Math.floor(rows / 2) + 10 + Math.max(0, Math.floor((rows - 31) / 2));
+	const origin = -Math.floor((span + 12) / 2);
+	const phase = (t.secs * 3.2) % 21;
+	const head = bandTop + phase;
+	active = Math.min(2, Math.floor(phase / 7));
+	// Every caliper starts on this shared zero rail.
+	t.charColor(44, 66, 92);
+	for (let row = bandTop; row < bandTop + 21; row += 1) t.print('|', origin - 2, row);
+	// The scan strip lights the specimen it crosses.
+	box(origin + (span + 8) / 2, Math.floor(head), span + 8, 1, [17, 31, 48]);
+	for (let index = 0; index < 3; index += 1) {
+		const spec = specs[index];
+		const isDefault = spec.mode === font.defaultLayout;
+		const y = bandTop + index * 7;
+		const glow = Math.max(0, 1 - Math.abs(head - (y + 4)) / 4);
+		const gain = (isDefault ? 1 : 0.66) + 0.45 * glow;
+		const tint = inks[spec.mode].map((value) => Math.min(255, Math.round(value * gain)));
+		t.charColor(...tint);
+		for (let col = 0; col <= spec.cols; col += 1)
+			t.print(col === 0 || col === spec.cols ? '+' : '=', origin - 1 + col, y);
+		t.print(`${spec.cols} ${spec.mode.toUpperCase()}${isDefault ? ' DEFAULT' : ''}`, origin + spec.cols + 2, y);
+		for (const cell of spec.plan.cells) t.print(cell.char, origin + cell.col, y + 1 + cell.row);
 	}
-
-	// Draw bounds
-	t.push();
-	t.charColor(255, 180, 100);
-	t.print('[', startX - 2, 0);
-	t.print(']', startX + plan.cols + 1, 0);
-	t.printAlign('center', 'top');
-	const label = `${plan.cols} columns`;
-	t.print(label, 0, startY + plan.rows + 2);
-	t.pop();
+	t.charColor(255, 210, 120);
+	t.print('>', origin - 4, Math.floor(head));
 });
-
+t.draw(() => t.background(12, 16, 30));
 t.windowResized(() => {
 	t.resizeCanvas(window.innerWidth, window.innerHeight);
-	const size = window.innerWidth < 700 ? 8 : 16;
-	t.fontSize(size);
-	for (const layer of t.layers.all) layer.fontSize(size);
+	t.fontSize(size());
+	for (const layer of t.layers.all) layer.fontSize(size());
 });
