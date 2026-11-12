@@ -1,20 +1,22 @@
 import type { TextmodePluginContext, Textmodifier } from 'textmode.js';
-import { color } from 'textmode.js';
 
 import { TextmodeFigFont } from '../figfont';
 import { FigletError } from '../error/FigletError';
 import { assertFigletStateLive, trackFont, type FigletPluginState } from '../state/figletState';
 
 import type {
-	FigRenderCell,
 	FigTextAlign,
 	FigTextBaseline,
+	FigTextCellContext,
 	FigTextColorResolver,
 	FigTextColorValue,
 	FigTextOptions,
 } from '../figfont';
 
-function resolveColor(value: FigTextColorResolver | undefined, cell: FigRenderCell): FigTextColorValue | undefined {
+function resolveColor(
+	value: FigTextColorResolver | undefined,
+	cell: FigTextCellContext
+): FigTextColorValue | undefined {
 	if (value === undefined) {
 		return undefined;
 	}
@@ -27,45 +29,26 @@ function applyResolvedColor(
 	methodName: 'charColor' | 'cellColor',
 	value: FigTextColorValue
 ): void {
-	if (value instanceof color.TextmodeColor || typeof value === 'string') {
-		if (methodName === 'charColor') {
-			textmodifier.charColor(value);
+	if (Array.isArray(value)) {
+		if (value.length === 4) {
+			textmodifier[methodName](value[0], value[1], value[2], value[3]);
 			return;
 		}
 
-		textmodifier.cellColor(value);
+		textmodifier[methodName](value[0], value[1], value[2]);
 		return;
 	}
 
 	if (typeof value === 'number') {
-		if (methodName === 'charColor') {
-			textmodifier.charColor(value);
-			return;
-		}
-
-		textmodifier.cellColor(value);
+		textmodifier[methodName](value);
 		return;
 	}
 
-	if (value.length === 4) {
-		if (methodName === 'charColor') {
-			textmodifier.charColor(value[0], value[1], value[2], value[3]);
-			return;
-		}
-
-		textmodifier.cellColor(value[0], value[1], value[2], value[3]);
-		return;
-	}
-
-	if (methodName === 'charColor') {
-		textmodifier.charColor(value[0], value[1], value[2]);
-		return;
-	}
-
-	textmodifier.cellColor(value[0], value[1], value[2]);
+	textmodifier[methodName](value);
 }
 
 function getActiveFigFont(state: FigletPluginState): TextmodeFigFont {
+	assertFigletStateLive(state);
 	const font = state.activeFont;
 	if (!font) {
 		throw new FigletError('No FIGlet font is active. Call figFont() first.');
@@ -140,6 +123,7 @@ export function installTextmodifierFigletExtensions(api: TextmodePluginContext, 
 
 	api.defineExtension('textmodifier', 'figFont', {
 		value: function (this: Textmodifier, font?: TextmodeFigFont) {
+			assertFigletStateLive(state);
 			if (font === undefined) {
 				return state.activeFont;
 			}
@@ -204,6 +188,7 @@ export function installTextmodifierFigletExtensions(api: TextmodePluginContext, 
 
 	api.defineExtension('textmodifier', 'figTextAlign', {
 		value: function (this: Textmodifier, align?: FigTextAlign) {
+			assertFigletStateLive(state);
 			if (align === undefined) {
 				return state.align;
 			}
@@ -214,6 +199,7 @@ export function installTextmodifierFigletExtensions(api: TextmodePluginContext, 
 
 	api.defineExtension('textmodifier', 'figTextBaseline', {
 		value: function (this: Textmodifier, baseline?: FigTextBaseline) {
+			assertFigletStateLive(state);
 			if (baseline === undefined) {
 				return state.baseline;
 			}

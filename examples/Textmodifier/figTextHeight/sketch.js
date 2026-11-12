@@ -1,91 +1,100 @@
 /**
  * @title Textmodifier.figTextHeight
  */
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
-	fontSize: 8,
+	fontSize: window.innerWidth < 700 ? 8 : 16,
 	plugins: [FigletPlugin],
 });
-
-const labelLayer = t.layers.add();
-
-let font;
-let textHeight = 0;
-
-function drawText(text, x, y, r = 220, g = 230, b = 255) {
+const fontSize = () => (window.innerWidth < 700 ? 8 : 16);
+const sceneLayer = t.layers.add({ fontSize: fontSize() });
+const labelLayer = t.layers.add({ fontSize: fontSize() });
+const inputs = ['UP', 'UP\nDN'];
+const layout = { verticalLayout: 'full' };
+let font,
+	state = { lines: 1, rows: 4 };
+function drawLabel(lines) {
+	const { cols, rows } = labelLayer.grid;
+	const [left, top] = [-Math.floor(cols / 2), -Math.floor(rows / 2)];
+	const width = Math.max(...lines.map(([text]) => [...text].length)) + 2;
 	t.push();
-	t.printAlign('left', 'top');
-	t.charColor(r, g, b);
-	t.print(text, x, y);
+	t.translate(left + (width + 4) / 2, top + (lines.length + 5) / 2);
+	t.cellColor(6, 10, 22);
+	t.rect(width, lines.length + 2);
 	t.pop();
+	t.cellColor(6, 10, 22);
+	lines.forEach(([text, color], i) => {
+		t.charColor(...color);
+		t.print(text, left + 3, top + 3 + i);
+	});
 }
-
 t.setup(async () => {
 	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
 	t.figFont(font);
 	t.figTextAlign('center');
-	t.figTextBaseline('center');
+	t.figTextBaseline('top');
 });
+t.draw(() => t.background(8, 10, 18));
+sceneLayer.draw(() => {
+	t.clear();
+	if (!font) return;
+	const text = inputs[Math.floor(t.secs / 3) % inputs.length];
+	const count = text.split('\n').length;
+	const rows = t.figTextHeight(text, layout);
+	state = { lines: count, rows };
+	const top = -Math.floor(rows / 2);
+	const band = rows / count;
+	// A fixed rail makes the measured stack's growth visible.
+	t.charColor(44, 72, 100);
+	for (let row = -5; row <= 4; row++) {
+		t.print(row === -5 || row === 4 ? '+' : '|', -18, row);
+		if (row % 2 === 0) t.print('-', -20, row);
+	}
+	// One tinted band per input line: the rows returned by figTextHeight().
+	for (let line = 0; line < count; line++) {
+		t.push();
+		t.translate(0, top + line * band + band / 2);
+		t.cellColor(...(line === 0 ? [18, 54, 58] : [28, 38, 78]));
+		t.rect(26, band);
+		t.pop();
+	}
+	t.push();
+	t.translate(0, top + (Math.floor(t.secs * 2.7) % rows));
+	t.cellColor(42, 96, 110);
+	t.rect(26, 1);
+	t.pop();
+	t.figText(text, 0, top, {
+		...layout,
+		charColor: (cell) => (cell.lineIndex === 0 ? [150, 255, 210] : [150, 205, 255]),
+		cellColor: (cell) => (cell.lineIndex === 0 ? [18, 54, 58] : [28, 38, 78]),
+	});
 
+	// Amber rules bound exactly the rows that figTextHeight() reports.
+	t.charColor(255, 200, 80);
+	for (let col = -14; col <= 14; col++) t.print(col === -14 || col === 14 ? '+' : '-', col, top - 1);
+	for (let col = -14; col <= 14; col++) t.print(col === -14 || col === 14 ? '+' : '-', col, top + rows);
+	for (let row = top; row < top + rows; row++) t.print('|', 17, row);
+	t.print('+', 17, top);
+	t.print('+', 17, top + rows - 1);
+	t.charColor(140, 255, 200);
+	t.print(`${rows}`, 17, top + Math.floor(rows / 2));
+});
 labelLayer.draw(() => {
 	t.clear();
-	const left = -Math.floor(t.grid.cols / 2);
-	const top = -Math.floor(t.grid.rows / 2);
-	let y = top + 3;
-	const x = left + 3;
-
-	drawText('TEXTMODIFIER.FIGTEXTHEIGHT', x, y++, 100, 255, 140);
-	drawText('------------------------------------', x, y++, 80, 100, 150);
-	drawText('CONCEPT: MEASURING RENDER HEIGHT', x, y++, 100, 220, 255);
-	drawText('Gets the exact grid height of text.', x, y++, 140, 160, 190);
-	drawText('Useful for vertical layouts.', x, y++, 140, 160, 190);
-	drawText('------------------------------------', x, y++, 80, 100, 150);
-	if (font) {
-		drawText(`Measured height: ${textHeight} cells`, x, y++, 140, 255, 180);
-	} else {
-		drawText('Loading font...', x, y++, 255, 180, 100);
-	}
+	drawLabel([
+		['TEXTMODIFIER.FIGTEXTHEIGHT', [120, 240, 180]],
+		['------------------------------------', [70, 100, 140]],
+		['CONCEPT: VERTICAL STACK GAUGE', [140, 210, 255]],
+		['figTextHeight() returns total rows.', [140, 160, 190]],
+		['Two input lines double the rows.', [140, 160, 190]],
+		['------------------------------------', [70, 100, 140]],
+		[`LINES: ${state.lines}  ROWS: ${state.rows}`, [140, 255, 200]],
+	]);
 });
-
-t.draw(() => {
-	t.background(10, 10, 14);
-
-	if (!font) return;
-
-	textHeight = t.figTextHeight('HEIGHT');
-
-	const time = t.secs * 2.0;
-
-	// Draw the FIGlet text
-	t.figText('HEIGHT', 0, 0);
-
-	// Draw vertical rulers on the sides
-	const halfH = Math.floor(textHeight / 2);
-	t.push();
-	t.charColor(180, 100, 255);
-	for (let i = 0; i < textHeight; i++) {
-		// Left ruler at x = -20, right ruler at x = 20
-		const yPos = -halfH + i;
-		const wave = Math.sin(time + i * 0.4);
-		const charToUse = wave > 0 ? '█' : '▒';
-
-		t.push();
-		t.translate(-22, yPos);
-		t.char(charToUse);
-		t.point();
-		t.pop();
-
-		t.push();
-		t.translate(22, yPos);
-		t.char(charToUse);
-		t.point();
-		t.pop();
-	}
-	t.pop();
-});
-
 t.windowResized(() => {
 	t.resizeCanvas(window.innerWidth, window.innerHeight);
+	const size = fontSize();
+	t.fontSize(size);
+	for (const layer of t.layers.all) layer.fontSize(size);
 });

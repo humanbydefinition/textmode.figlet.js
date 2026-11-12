@@ -26,19 +26,7 @@ export class FigletError extends Error {
 	}
 
 	private static formatValue(value: unknown): string {
-		if (value === null) return 'null';
-		if (value === undefined) return 'undefined';
 		if (typeof value === 'string') return `"${value}"`;
-		if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-
-		if (Array.isArray(value)) {
-			return `[${value.map((entry) => FigletError.formatValue(entry)).join(', ')}]`;
-		}
-
-		if (typeof value === 'object') {
-			return JSON.stringify(value);
-		}
-
 		return String(value);
 	}
 }

@@ -8,7 +8,6 @@ export type {
 	FigFontHeader,
 	FigHorizontalLayout,
 	FigPrintDirection,
-	FigRenderCell,
 	FigRenderLine,
 	FigRenderPlan,
 	FigTextAlign,
@@ -21,5 +20,6 @@ export type {
 	FigVerticalLayout,
 	FigWrapMode,
 	ParsedFigFontData,
+	ResolvedFigInputCharacter,
 } from './types';
 export { FIGFONT_REQUIRED_CODEPOINTS } from './types';

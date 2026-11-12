@@ -5,79 +5,96 @@
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
-	fontSize: 8,
+	fontSize: window.innerWidth < 700 ? 8 : 16,
 	plugins: [FigletPlugin],
 });
+const sceneLayer = t.layers.add({ fontSize: window.innerWidth < 700 ? 8 : 16 });
+const labelLayer = t.layers.add({ fontSize: window.innerWidth < 700 ? 8 : 16 });
+const WORD = 'WIDTH';
+const modes = ['full', 'fitted', 'smushed'];
+const warm = [255, 186, 92],
+	cool = [120, 220, 255],
+	soft = [200, 160, 255];
+let font,
+	spans = [0, 0, 0],
+	active = 0;
 
-const labelLayer = t.layers.add();
-
-let font;
-let textWidth = 0;
-
-function drawText(text, x, y, r = 220, g = 230, b = 255) {
+function drawLabel(lines) {
+	const { cols, rows } = labelLayer.grid;
+	const [left, top] = [-Math.floor(cols / 2), -Math.floor(rows / 2)];
+	const width = Math.max(...lines.map(([text]) => [...text].length)) + 2;
 	t.push();
-	t.printAlign('left', 'top');
-	t.charColor(r, g, b);
-	t.print(text, x, y);
+	t.translate(left + (width + 4) / 2, top + (lines.length + 5) / 2);
+	t.cellColor(6, 10, 22);
+	t.rect(width, lines.length + 2);
 	t.pop();
+	t.cellColor(6, 10, 22);
+	t.printAlign('left', 'top');
+	lines.forEach(([text, color], i) => {
+		t.charColor(color[0], color[1], color[2]);
+		t.print(text, left + 3, top + 3 + i);
+	});
 }
 
 t.setup(async () => {
-	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
+	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/ASCII%20New%20Roman.flf');
 	t.figFont(font);
-	t.figTextAlign('center');
-	t.figTextBaseline('center');
+	t.figTextAlign('left');
+	t.figTextBaseline('top');
+	spans = modes.map((horizontalLayout) => t.figTextWidth(WORD, { horizontalLayout }));
+});
+
+t.draw(() => t.background(9, 12, 22));
+
+sceneLayer.draw(() => {
+	if (!font) return;
+	t.clear();
+	const { rows } = sceneLayer.grid;
+	const full = spans[0];
+	const left = -1 - Math.floor(full / 2);
+	const step = Math.max(6, Math.min(9, Math.floor((rows - 18) / 3)));
+	const first = Math.max(12, Math.floor((rows - 18) / 2) + 2) - Math.floor(rows / 2);
+	active = Math.floor(t.secs / 2.4) % 3;
+	const phase = (t.secs % 2.4) / 2.4;
+	t.charColor(40, 52, 74);
+	for (let r = first - 1; r <= first + 2 * step + 5; r += 1) t.print(':', left + full - 1, r);
+	for (let i = 0; i < 3; i += 1) {
+		const top = first + i * step;
+		const span = spans[i];
+		const bar = top + 5;
+		const on = i === active;
+		const lift = on ? 0.78 + 0.22 * Math.sin(t.secs * 3) : 0.42;
+		const ink = [warm, cool, soft][i].map((v) => Math.round(v * lift));
+		const needle = left + 1 + Math.floor(phase * (span - 2));
+		t.figText(WORD, left, top + 1, { horizontalLayout: modes[i], charColor: ink });
+		const fill = Array.from({ length: span - 2 }, (_, k) => ((k + 1) % 4 === 0 ? '+' : '=')).join('');
+		t.charColor('#28344a');
+		for (let x = left + span; x < left + full; x += 1) t.print('.', x, bar);
+		t.charColor(ink[0], ink[1], ink[2]);
+		t.print(`[${fill}]`, left, bar);
+		t.print(`${span}`, left + full + 2, bar);
+		t.print(modes[i].toUpperCase(), left, top);
+		if (on) {
+			t.charColor('#fff4c4');
+			t.print('|', needle, bar);
+		}
+	}
 });
 
 labelLayer.draw(() => {
 	t.clear();
-	const left = -Math.floor(t.grid.cols / 2);
-	const top = -Math.floor(t.grid.rows / 2);
-	let y = top + 3;
-	const x = left + 3;
-
-	drawText('TEXTMODIFIER.FIGTEXTWIDTH', x, y++, 100, 255, 140);
-	drawText('------------------------------------', x, y++, 80, 100, 150);
-	drawText('CONCEPT: MEASURING RENDER WIDTH', x, y++, 100, 220, 255);
-	drawText('Gets the exact grid width of text.', x, y++, 140, 160, 190);
-	drawText('Accounts for horizontal layout modes.', x, y++, 140, 160, 190);
-	drawText('------------------------------------', x, y++, 80, 100, 150);
-	if (font) {
-		drawText(`Measured width: ${textWidth} cells`, x, y++, 140, 255, 180);
-	} else {
-		drawText('Loading font...', x, y++, 255, 180, 100);
-	}
+	drawLabel([
+		['TEXTMODIFIER.FIGTEXTWIDTH', [120, 240, 180]],
+		['------------------------------------', [70, 100, 140]],
+		['CONCEPT: CALIPER COMPARISON', [140, 210, 255]],
+		['Same word, three layouts; span=width.', [140, 160, 190]],
+		[font ? `Active: ${modes[active].toUpperCase()} = ${spans[active]}` : 'Loading font...', [140, 255, 200]],
+		[font ? `Widths: ${spans.join(' / ')} cells` : '', [140, 255, 200]],
+	]);
 });
-
-t.draw(() => {
-	t.background(10, 12, 16);
-
-	if (!font) return;
-
-	const layout = { horizontalLayout: 'fitted' };
-	textWidth = t.figTextWidth('WIDTH', layout);
-
-	const time = t.secs * 2.0;
-
-	// Draw the FIGlet text
-	t.figText('WIDTH', 0, -2, layout);
-
-	// Draw a dynamic horizontal ruler matching the measured width
-	const startX = -Math.floor(textWidth / 2);
-	t.push();
-	t.charColor(100, 255, 180);
-	for (let i = 0; i < textWidth; i++) {
-		t.push();
-		t.translate(startX + i, 3);
-		// Animate ruler characters
-		const wave = Math.sin(time + i * 0.4);
-		t.char(wave > 0 ? '█' : '▓');
-		t.point();
-		t.pop();
-	}
-	t.pop();
-});
-
 t.windowResized(() => {
 	t.resizeCanvas(window.innerWidth, window.innerHeight);
+	const size = window.innerWidth < 700 ? 8 : 16;
+	t.fontSize(size);
+	for (const layer of t.layers.all) layer.fontSize(size);
 });

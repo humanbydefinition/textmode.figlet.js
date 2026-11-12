@@ -1,86 +1,98 @@
 /**
  * @title TextmodeFigFont.measureText
  */
-
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
-	fontSize: 8,
+	fontSize: window.innerWidth < 700 ? 8 : 16,
 	plugins: [FigletPlugin],
 });
-
-const labelLayer = t.layers.add();
-
-let font;
-let dimensions = { cols: 0, rows: 0 };
-
-function drawText(text, x, y, r = 220, g = 230, b = 255) {
+const fontSize = () => (window.innerWidth < 700 ? 8 : 16);
+const sceneLayer = t.layers.add({ fontSize: fontSize() });
+const labelLayer = t.layers.add({ fontSize: fontSize() });
+const words = ['METRIC', 'WIDE', 'I'];
+const layout = { horizontalLayout: 'fitted' };
+let font,
+	state = { word: 'METRIC', cols: 0, rows: 0 };
+function drawLabel(lines) {
+	const { cols, rows } = labelLayer.grid;
+	const [left, top] = [-Math.floor(cols / 2), -Math.floor(rows / 2)];
+	const width = Math.max(...lines.map(([text]) => [...text].length)) + 2;
 	t.push();
-	t.printAlign('left', 'top');
-	t.charColor(r, g, b);
-	t.print(text, x, y);
+	t.translate(left + (width + 4) / 2, top + (lines.length + 5) / 2);
+	t.cellColor(6, 10, 22);
+	t.rect(width, lines.length + 2);
 	t.pop();
+	t.cellColor(6, 10, 22);
+	lines.forEach(([text, color], i) => {
+		t.charColor(...color);
+		t.print(text, left + 3, top + 3 + i);
+	});
 }
-
 t.setup(async () => {
 	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
-	t.figFont(font);
-	t.figTextAlign('center');
-	t.figTextBaseline('center');
 });
+t.draw(() => t.background(8, 14, 26));
+sceneLayer.draw(() => {
+	t.clear();
+	if (!font) return;
+	const word = words[Math.floor(t.secs / 3.5) % words.length];
+	const measured = font.measureText(word, layout);
+	state = { word, cols: measured.cols, rows: measured.rows };
+	const left = -Math.floor(measured.cols / 2);
+	const top = -Math.floor(measured.rows / 2);
+	const right = left + measured.cols - 1;
+	const bottom = top + measured.rows - 1;
 
+	// A dotted cell envelope marks the measured region. No glyph is drawn.
+	t.charColor(74, 138, 176);
+	for (let col = left; col <= right; col++) t.print('.', col, top);
+	for (let col = left; col <= right; col++) t.print('.', col, bottom);
+	for (let row = top + 1; row < bottom; row++) t.print('.', left, row);
+	for (let row = top + 1; row < bottom; row++) t.print('.', right, row);
+	t.charColor(120, 220, 255);
+	t.print('+', left - 1, top - 1);
+	t.print('+', right + 1, top - 1);
+	t.print('+', left - 1, bottom + 1);
+	t.print('+', right + 1, bottom + 1);
+
+	// Dimension arrows annotate the measured width and height.
+	t.charColor(255, 200, 80);
+	t.print('<', left, top - 2);
+	t.print('>', right, top - 2);
+	for (let col = left + 1; col < right; col++) t.print('-', col, top - 2);
+	t.print(`${measured.cols}`, Math.round((left + right) / 2), top - 3);
+	t.print('^', left - 3, top);
+	t.print('v', left - 3, bottom);
+	for (let row = top + 1; row < bottom; row++) t.print('|', left - 3, row);
+	t.print(`${measured.rows}`, left - 5, top + 1);
+
+	// A scan line sweeps the envelope while the measured word stays invisible.
+	const phase = (t.secs * 0.45) % 2;
+	const scan = left + Math.min(measured.cols - 1, Math.floor((phase > 1 ? 2 - phase : phase) * measured.cols));
+	t.push();
+	t.translate(scan, top + measured.rows / 2);
+	t.cellColor(24, 62, 74);
+	t.rect(1, measured.rows);
+	t.pop();
+	t.charColor(120, 255, 190);
+	for (let row = top; row <= bottom; row++) t.print(':', scan, row);
+});
 labelLayer.draw(() => {
 	t.clear();
-	const left = -Math.floor(t.grid.cols / 2);
-	const top = -Math.floor(t.grid.rows / 2);
-	let y = top + 3;
-	const x = left + 3;
-
-	drawText('TEXTMODEFIGFONT.MEASURETEXT', x, y++, 100, 255, 140);
-	drawText('------------------------------------', x, y++, 80, 100, 150);
-	drawText('CONCEPT: OFFSCREEN TEXT MEASURE', x, y++, 100, 220, 255);
-	drawText('Measures size without rendering cells.', x, y++, 140, 160, 190);
-	drawText('Calculates columns and rows size.', x, y++, 140, 160, 190);
-	drawText('------------------------------------', x, y++, 80, 100, 150);
-	if (font) {
-		const w = dimensions.cols;
-		const h = dimensions.rows;
-		drawText(`Size: ${w}x${h}`, x, y++, 140, 255, 180);
-	} else {
-		drawText('Measuring text...', x, y++, 255, 180, 100);
-	}
+	drawLabel([
+		['TEXTMODEFIGFONT.MEASURETEXT', [120, 240, 180]],
+		['------------------------------------', [70, 100, 140]],
+		['CONCEPT: BLUEPRINT MEASUREMENT', [140, 210, 255]],
+		['measureText() returns cols and rows', [140, 160, 190]],
+		['without drawing a single cell.', [140, 160, 190]],
+		['------------------------------------', [70, 100, 140]],
+		[`${state.word}: ${state.cols} X ${state.rows} CELLS`, [140, 255, 200]],
+	]);
 });
-
-t.draw(() => {
-	t.background(10, 15, 12);
-
-	if (!font) return;
-
-	// Measure text size prior to drawing
-	dimensions = font.measureText('MEASURE');
-
-	const time = t.secs * 1.5;
-
-	// Draw FIGlet text
-	t.figText('MEASURE', 0, 0);
-
-	// Draw measured frame
-	const w = dimensions.cols;
-	const h = dimensions.rows;
-	const halfW = Math.floor(w / 2);
-	const halfH = Math.floor(h / 2);
-
-	t.push();
-	t.charColor(255, 200, 100);
-	for (let col = -halfW - 2; col <= -halfW + w + 1; col++) {
-		const wave = Math.sin(time + col * 0.3);
-		const borderChar = wave > 0 ? '=' : '-';
-		t.print(borderChar, col, -halfH - 2);
-		t.print(borderChar, col, -halfH + h + 1);
-	}
-	t.pop();
-});
-
 t.windowResized(() => {
 	t.resizeCanvas(window.innerWidth, window.innerHeight);
+	const size = fontSize();
+	t.fontSize(size);
+	for (const layer of t.layers.all) layer.fontSize(size);
 });

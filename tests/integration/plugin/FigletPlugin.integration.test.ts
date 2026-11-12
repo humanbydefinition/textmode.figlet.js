@@ -78,6 +78,35 @@ describe('FigletPlugin integration', () => {
 		expect(dispose).toHaveBeenCalledOnce();
 	});
 
+	it('untracks fonts when disposed before plugin cleanup', () => {
+		const ownedFont = stub.parseFigFont('owned', fontData);
+		stub.figFont(ownedFont);
+		expect(stub.figFont()).toBe(ownedFont);
+
+		ownedFont.dispose();
+
+		expect(stub.figFont()).toBeUndefined();
+		const disposeSpy = vi.spyOn(ownedFont, 'dispose');
+		pluginCleanup?.();
+		expect(disposeSpy).not.toHaveBeenCalled();
+	});
+
+	it('throws disposed error when calling extension methods after plugin disposal', () => {
+		pluginCleanup?.();
+
+		expect(() => stub.figFont()).toThrow('FIGlet plugin has been disposed');
+		expect(() => stub.figFont(figFont)).toThrow('FIGlet plugin has been disposed');
+		expect(() => stub.figText('AB', 0, 0)).toThrow('FIGlet plugin has been disposed');
+		expect(() => stub.figTextWidth('AB')).toThrow('FIGlet plugin has been disposed');
+		expect(() => stub.figTextHeight('AB')).toThrow('FIGlet plugin has been disposed');
+		expect(() => stub.figTextBounds('AB')).toThrow('FIGlet plugin has been disposed');
+		expect(() => stub.figTextAlign('center')).toThrow('FIGlet plugin has been disposed');
+		expect(() => stub.figTextAlign()).toThrow('FIGlet plugin has been disposed');
+		expect(() => stub.figTextBaseline('top')).toThrow('FIGlet plugin has been disposed');
+		expect(() => stub.figTextBaseline()).toThrow('FIGlet plugin has been disposed');
+		expect(() => stub.parseFigFont('p', fontData)).toThrow('FIGlet plugin has been disposed');
+	});
+
 	it('disposes a late font load instead of resurrecting disposed state', async () => {
 		let resolveResponse!: (response: Response) => void;
 		global.fetch = vi.fn(() => new Promise<Response>((resolve) => (resolveResponse = resolve))) as typeof fetch;

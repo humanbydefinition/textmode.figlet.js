@@ -5,86 +5,96 @@
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
-	fontSize: 8,
+	fontSize: window.innerWidth < 700 ? 8 : 16,
 	plugins: [FigletPlugin],
 });
-const labelLayer = t.layers.add();
-
+const sceneLayer = t.layers.add({ fontSize: window.innerWidth < 700 ? 8 : 16 });
+const labelLayer = t.layers.add({ fontSize: window.innerWidth < 700 ? 8 : 16 });
+const layout = { horizontalLayout: 'fitted' };
+const words = ['FIG', 'FONT', 'BOUNDS'];
 let font,
-	bounds = { cols: 0, rows: 0 };
-
-function drawText(text, x, y, r = 220, g = 230, b = 255) {
+	current = { text: 'FIG', cols: 0, rows: 0 };
+function drawLabel(lines) {
+	const { cols, rows } = labelLayer.grid;
+	const [left, top] = [-Math.floor(cols / 2), -Math.floor(rows / 2)];
+	const width = Math.max(...lines.map(([text]) => [...text].length)) + 2;
 	t.push();
-	t.printAlign('left', 'top');
-	t.charColor(r, g, b);
-	t.print(text, x, y);
+	t.translate(left + (width + 4) / 2, top + (lines.length + 5) / 2);
+	t.cellColor(6, 10, 22);
+	t.rect(width, lines.length + 2);
 	t.pop();
+	t.printAlign('left', 'top');
+	lines.forEach(([text, color], i) => {
+		t.charColor(color[0], color[1], color[2]);
+		t.print(text, left + 3, top + 3 + i);
+	});
 }
 
 t.setup(async () => {
 	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
 	t.figFont(font);
-	t.figTextAlign('center');
-	t.figTextBaseline('center');
+	t.figTextAlign('left');
+	t.figTextBaseline('top');
+});
+t.draw(() => t.background(12, 16, 30));
+
+sceneLayer.draw(() => {
+	if (!font) return;
+	t.clear();
+	const text = words[Math.floor(t.secs / 3) % words.length];
+	const size = t.figTextBounds(text, layout);
+	current = { text, cols: size.cols, rows: size.rows };
+
+	const startCol = -Math.floor(size.cols / 2);
+	const startRow = -1;
+	t.figText(text, startCol, startRow, {
+		...layout,
+		cellColor: [0, 0, 0, 0],
+		charColor: (cell) => {
+			const pulse = 0.7 + 0.3 * Math.sin(t.secs * 1.8 + cell.col * 0.16 + cell.row * 0.4);
+			return [Math.round(255 * pulse), Math.round(150 + 80 * pulse), Math.round(220 - 60 * pulse)];
+		},
+	});
+
+	// The frame sits exactly one cell outside the measured bounds.
+	const left = startCol - 1;
+	const right = startCol + size.cols;
+	const top = startRow - 1;
+	const bottom = startRow + size.rows;
+	t.push();
+	t.printAlign('left', 'top');
+	t.charColor(Math.round(140 * (0.65 + 0.35 * Math.sin(t.secs * 1.44))), 180, 240);
+	for (let col = left; col <= right; col++) {
+		const edge = col === left || col === right ? '+' : '-';
+		t.print(edge, col, top);
+		t.print(edge, col, bottom);
+	}
+	for (let row = top + 1; row < bottom; row++) {
+		t.print('|', left, row);
+		t.print('|', right, row);
+	}
+	t.charColor(140, 255, 200);
+	t.printAlign('center', 'top');
+	t.print(`${size.cols} cells wide`, 0, bottom + 2);
+	t.pop();
 });
 
 labelLayer.draw(() => {
 	t.clear();
-	const left = -Math.floor(t.grid.cols / 2);
-	const top = -Math.floor(t.grid.rows / 2);
-	const x = left + 3;
-	let y = top + 3;
-
-	drawText('TEXTMODIFIER.FIGTEXTBOUNDS', x, y++, 100, 255, 140);
-	drawText('------------------------------------', x, y++, 80, 100, 150);
-	drawText('CONCEPT: TEXT BOUNDING BOX', x, y++, 100, 220, 255);
-	drawText('Obtains precise text dimensions.', x, y++, 140, 160, 190);
-	drawText('Enables pixel-perfect alignments.', x, y++, 140, 160, 190);
-	drawText('------------------------------------', x, y++, 80, 100, 150);
-	if (font) drawText('Bounds: ' + bounds.cols + 'x' + bounds.rows + ' cells', x, y++, 140, 255, 180);
-	else drawText('Loading...', x, y++, 255, 180, 100);
+	drawLabel([
+		['TEXTMODIFIER.FIGTEXTBOUNDS', [120, 240, 180]],
+		['------------------------------------', [70, 100, 140]],
+		['CONCEPT: MEASURE BEFORE DRAWING', [140, 210, 255]],
+		['figTextBounds() gives cols and rows.', [140, 160, 190]],
+		['Frame it with a one-cell margin.', [140, 160, 190]],
+		['------------------------------------', [70, 100, 140]],
+		[`Text: ${current.text}`, [140, 255, 200]],
+		[`Size: ${Math.round(current.cols)} x ${Math.round(current.rows)} cells`, [140, 255, 200]],
+	]);
 });
-
-t.draw(() => {
-	t.background(8, 10, 18);
-	if (!font) return;
-
-	bounds = t.figTextBounds('BOUNDS');
-	const w = bounds.cols,
-		h = bounds.rows;
-	const halfW = w >> 1,
-		halfH = h >> 1,
-		time = t.secs * 2;
-
-	t.push();
-	t.translate((w - 1) / 2 - halfW, (h - 1) / 2 - halfH);
-	(t.char(' '), t.cellColor(15, 20, 30), t.rect(w + 2, h + 2));
-	t.pop();
-
-	// Draw scanline
-	t.push();
-	t.charColor(255, 80, 80, 150);
-	const scanY = -halfH + Math.floor((time * 4) % h);
-	for (let col = -halfW; col < -halfW + w; col++) t.print('~', col, scanY);
-	t.pop();
-
-	// Draw simple border using only '-' and '|'
-	t.push();
-	t.charColor(100, Math.round(150 + 105 * Math.sin(time)), 255);
-	const l = -halfW - 1,
-		r = -halfW + w,
-		tRow = -halfH - 1,
-		bRow = -halfH + h;
-	for (let c = l; c <= r; c++) (t.print('-', c, tRow), t.print('-', c, bRow));
-	for (let y = tRow + 1; y < bRow; y++) (t.print('|', l, y), t.print('|', r, y));
-	t.pop();
-
-	t.push();
-	t.charColor(255, 255, 255);
-	t.figText('BOUNDS', 0, 0);
-	t.pop();
-});
-
 t.windowResized(() => {
 	t.resizeCanvas(window.innerWidth, window.innerHeight);
+	const size = window.innerWidth < 700 ? 8 : 16;
+	t.fontSize(size);
+	for (const layer of t.layers.all) layer.fontSize(size);
 });

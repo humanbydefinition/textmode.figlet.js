@@ -175,7 +175,10 @@ export class FigFontParser {
 				});
 			}
 
-			const line = rawLine.replace(new RegExp(`${this.escapeForRegExp(endmark)}+$`), '');
+			let line = rawLine;
+			while (line.endsWith(endmark)) {
+				line = line.slice(0, -1);
+			}
 			parsedLines.push(line);
 			width = Math.max(width, line.length);
 		}
@@ -211,9 +214,5 @@ export class FigFontParser {
 		}
 
 		return Number.parseInt(token, 10);
-	}
-
-	private static escapeForRegExp(value: string): string {
-		return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 	}
 }

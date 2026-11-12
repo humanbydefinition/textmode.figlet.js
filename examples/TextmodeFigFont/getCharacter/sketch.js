@@ -5,83 +5,96 @@
 const t = textmode.create({
 	width: window.innerWidth,
 	height: window.innerHeight,
-	fontSize: 8,
+	fontSize: window.innerWidth < 700 ? 8 : 16,
 	plugins: [FigletPlugin],
 });
 
-const labelLayer = t.layers.add();
+const sceneLayer = t.layers.add({ fontSize: window.innerWidth < 700 ? 8 : 16 });
+const labelLayer = t.layers.add({ fontSize: window.innerWidth < 700 ? 8 : 16 });
 
-let font;
 const chars = ['A', '5', '&', '?', '@', '#'];
-let currentChar = 'A';
-let charCode = 65;
-let charWidth = 0;
+let font,
+	current = { char: 'A', code: 65, width: 0, rows: 0 };
 
-function drawText(text, x, y, r = 220, g = 230, b = 255) {
+function drawLabel(lines) {
+	const { cols, rows } = labelLayer.grid;
+	const [left, top] = [-Math.floor(cols / 2), -Math.floor(rows / 2)];
+	const width = Math.max(...lines.map(([text]) => [...text].length)) + 2;
 	t.push();
-	t.printAlign('left', 'top');
-	t.charColor(r, g, b);
-	t.print(text, x, y);
+	t.translate(left + (width + 4) / 2, top + (lines.length + 5) / 2);
+	t.cellColor(6, 10, 22);
+	t.rect(width, lines.length + 2);
 	t.pop();
+	t.printAlign('left', 'top');
+	lines.forEach(([text, color], i) => {
+		t.charColor(color[0], color[1], color[2]);
+		t.print(text, left + 3, top + 3 + i);
+	});
 }
 
 t.setup(async () => {
 	font = await t.loadFigFont('https://cdn.jsdelivr.net/gh/xero/figlet-fonts@master/Bulbhead.flf');
 	t.figFont(font);
-	t.figTextAlign('center');
-	t.figTextBaseline('center');
+});
+t.draw(() => t.background(12, 16, 30));
+
+sceneLayer.draw(() => {
+	if (!font) return;
+	t.clear();
+	const char = chars[Math.floor(t.secs / 3) % chars.length];
+	const info = font.getCharacter(char.charCodeAt(0));
+	if (!info) return;
+	current = { char, code: info.code, width: info.width, rows: info.lines.length };
+
+	const startCol = -Math.floor(info.width / 2);
+	const startRow = -1;
+	const left = startCol - 1;
+	const right = startCol + info.width;
+	const top = startRow - 1;
+	const bottom = startRow + info.lines.length;
+	const pulse = 0.72 + 0.28 * Math.sin(t.secs * 2.2);
+	const lineColor = [Math.round(150 + 90 * pulse), Math.round(210 + 40 * pulse), 255];
+
+	t.push();
+	t.printAlign('left', 'top');
+	t.cellColor(0, 0, 0, 0);
+	t.charColor(...lineColor);
+	for (let row = 0; row < info.lines.length; row++) t.print(info.lines[row], startCol, startRow + row);
+
+	t.charColor(110, 150, 210);
+	for (let col = left; col <= right; col++) {
+		const edge = col === left || col === right ? '+' : '-';
+		t.print(edge, col, top);
+		t.print(edge, col, bottom);
+	}
+	for (let row = top + 1; row < bottom; row++) {
+		t.print('|', left, row);
+		t.print('|', right, row);
+	}
+
+	// Column and row numbers expose the raw FIGcharacter dimensions.
+	t.charColor(140, 255, 200);
+	for (let col = 0; col < info.width; col++) t.print(String(col + 1), startCol + col, top - 1);
+	for (let row = 0; row < info.lines.length; row++) t.print(String(row + 1), left - 2, startRow + row);
+	t.pop();
 });
 
 labelLayer.draw(() => {
 	t.clear();
-	const left = -Math.floor(t.grid.cols / 2);
-	const top = -Math.floor(t.grid.rows / 2);
-	let y = top + 3;
-	const x = left + 3;
-
-	drawText('TEXTMODEFIGFONT.GETCHARACTER', x, y++, 100, 255, 140);
-	drawText('------------------------------------', x, y++, 80, 100, 150);
-	drawText('CONCEPT: INDIVIDUAL GLYPH INSPECT', x, y++, 100, 220, 255);
-	drawText('Gets metadata for a single character.', x, y++, 140, 160, 190);
-	drawText('Accesses glyph vector dimensions.', x, y++, 140, 160, 190);
-	drawText('------------------------------------', x, y++, 80, 100, 150);
-	if (font) {
-		drawText(`Char: '${currentChar}' Code: ${charCode}`, x, y++, 140, 255, 180);
-		drawText(`Glyph width: ${charWidth} cells`, x, y++, 140, 255, 180);
-	} else {
-		drawText('Loading font...', x, y++, 255, 180, 100);
-	}
+	drawLabel([
+		['TEXTMODEFIGFONT.GETCHARACTER', [120, 240, 180]],
+		['------------------------------------', [70, 100, 140]],
+		['CONCEPT: INSPECT ONE GLYPH', [140, 210, 255]],
+		['Code lookup returns raw glyph rows.', [140, 160, 190]],
+		['The frame matches width and height.', [140, 160, 190]],
+		['------------------------------------', [70, 100, 140]],
+		[`Char: '${current.char}'  Code: ${Math.round(current.code)}`, [140, 255, 200]],
+		[`Glyph: ${Math.round(current.width)} x ${Math.round(current.rows)} cells`, [140, 255, 200]],
+	]);
 });
-
-t.draw(() => {
-	t.background(10, 12, 14);
-
-	if (!font) return;
-
-	const index = Math.floor(t.secs / 2.0) % chars.length;
-	currentChar = chars[index];
-	charCode = currentChar.charCodeAt(0);
-
-	const charInfo = font.getCharacter(currentChar);
-	if (charInfo) {
-		charWidth = charInfo.width;
-
-		const linesCount = charInfo.lines.length;
-		const startY = -Math.floor(linesCount / 2);
-		const startX = -Math.floor(charWidth / 2);
-
-		t.push();
-		const time = t.secs * 2.0;
-		// Wave color
-		t.charColor(Math.round(150 + 105 * Math.sin(time)), 255, Math.round(180 + 75 * Math.cos(time)));
-
-		for (let r = 0; r < linesCount; r++) {
-			t.print(charInfo.lines[r], startX, startY + r);
-		}
-		t.pop();
-	}
-});
-
 t.windowResized(() => {
 	t.resizeCanvas(window.innerWidth, window.innerHeight);
+	const size = window.innerWidth < 700 ? 8 : 16;
+	t.fontSize(size);
+	for (const layer of t.layers.all) layer.fontSize(size);
 });
