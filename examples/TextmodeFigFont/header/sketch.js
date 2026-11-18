@@ -24,14 +24,14 @@ let headerLine = '';
 let spans = [];
 function drawLabel(lines) {
 	const { cols, rows } = labelLayer.grid;
-	const [left, top] = [-Math.floor(cols / 2), -Math.floor(rows / 2)];
+	const [left, top] = [-Math.floor((cols - 1) / 2), -Math.floor(rows / 2)];
 	const width = Math.max(...lines.map(([text]) => [...text].length)) + 2;
+	t.printAlign('left', 'top');
+	t.push();
 	t.cellColor(6, 10, 22);
 	for (let i = 0; i < lines.length + 2; i++) t.print(' '.repeat(width), left + 2, top + 2 + i);
-	lines.forEach(([text, color], i) => {
-		t.charColor(color[0], color[1], color[2]);
-		t.print(text, left + 3, top + 3 + i);
-	});
+	lines.forEach(([text, color], i) => (t.charColor(...color), t.print(text, left + 3, top + 3 + i)));
+	t.pop();
 }
 
 t.setup(async () => {

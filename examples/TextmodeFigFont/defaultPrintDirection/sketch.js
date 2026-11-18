@@ -17,18 +17,18 @@ let font,
 	plans = {};
 function drawLabel(lines) {
 	const { cols, rows } = labelLayer.grid;
-	const [left, top] = [-Math.floor(cols / 2), -Math.floor(rows / 2)];
+	const [left, top] = [-Math.floor((cols - 1) / 2), -Math.floor(rows / 2)];
 	const width = Math.max(...lines.map(([text]) => [...text].length)) + 2;
+	t.printAlign('left', 'top');
 	t.push();
-	t.translate(left + (width + 4) / 2, top + (lines.length + 5) / 2);
 	t.cellColor(6, 10, 22);
+	t.push();
+	t.translate(left + (width + 3) / 2, top + (lines.length + 5) / 2);
+	t.char(' ');
 	t.rect(width, lines.length + 2);
 	t.pop();
-	t.cellColor(6, 10, 22);
-	lines.forEach(([text, color], i) => {
-		t.charColor(...color);
-		t.print(text, left + 3, top + 3 + i);
-	});
+	lines.forEach(([text, color], i) => (t.charColor(...color), t.print(text, left + 3, top + 3 + i)));
+	t.pop();
 }
 // One lane streams right and the other left; a sweep follows each reading order.
 function drawLane(dir, y, laneW) {
