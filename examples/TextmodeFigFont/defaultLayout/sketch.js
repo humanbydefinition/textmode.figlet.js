@@ -38,7 +38,7 @@ t.setup(async () => {
 });
 labelLayer.draw(() => {
 	const { cols, rows } = labelLayer.grid;
-	const [left, top] = [-Math.floor(cols / 2) + 2, -Math.floor(rows / 2) + 2];
+	const [left, top] = [-Math.floor((cols - 1) / 2) + 2, -Math.floor(rows / 2) + 2];
 	const lines = [
 		[TITLE, [120, 240, 180]],
 		['------------------------------------', [70, 100, 140]],
@@ -54,12 +54,13 @@ labelLayer.draw(() => {
 	];
 	const width = Math.max(...lines.map(([text]) => [...text].length)) + 2;
 	t.clear();
-	box(left + width / 2, top + (lines.length + 2) / 2, width, lines.length + 2, [6, 10, 22]);
+	t.printAlign('left', 'top');
+	t.push();
+	t.char(' ');
+	box(left + (width - 1) / 2, top + (lines.length + 1) / 2, width, lines.length + 2, [6, 10, 22]);
 	t.cellColor(6, 10, 22);
-	lines.forEach(([text, color], index) => {
-		t.charColor(...color);
-		t.print(text, left + 1, top + 1 + index);
-	});
+	lines.forEach(([text, color], index) => (t.charColor(...color), t.print(text, left + 1, top + 1 + index)));
+	t.pop();
 });
 sceneLayer.draw(() => {
 	t.clear();

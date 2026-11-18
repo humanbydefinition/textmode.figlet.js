@@ -83,14 +83,14 @@ labelLayer.draw(() => {
 		[`ACTIVE ${active ? active.name : 'loading'}`, [140, 255, 200]],
 		[`NEXT SWITCH ${(4 - (t.secs % 4)).toFixed(1)}s`, [140, 255, 200]],
 	];
-	const left = -Math.floor(labelLayer.grid.cols / 2),
-		top = -Math.floor(labelLayer.grid.rows / 2);
+	const [left, top] = [-Math.floor((labelLayer.grid.cols - 1) / 2), -Math.floor(labelLayer.grid.rows / 2)];
 	const width = Math.max(...lines.map(([text]) => [...text].length)) + 2;
+	t.printAlign('left', 'top');
+	t.push();
 	plate(left + 2, top + 2, width, lines.length + 2, [6, 10, 22]);
-	lines.forEach(([text, color], i) => {
-		t.charColor(color[0], color[1], color[2]);
-		t.print(text, left + 3, top + 3 + i);
-	});
+	t.cellColor(6, 10, 22);
+	lines.forEach(([text, color], i) => (t.charColor(...color), t.print(text, left + 3, top + 3 + i)));
+	t.pop();
 });
 t.windowResized(() => {
 	t.resizeCanvas(window.innerWidth, window.innerHeight);
